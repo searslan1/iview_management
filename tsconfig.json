@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "types": ["node", "express"],
+    "target": "ES6",  // ES6 veya daha güncel bir dil seviyesi hedefleniyor
+    "module": "commonjs",  // Node.js'de modül sistemi olarak commonjs kullanılıyor
+    "strictNullChecks": true,
+    "outDir": "./dist",  // Derlenmiş dosyalar için çıkış dizini
+    "rootDir": "./src",  // Kaynak dosyalarının bulunduğu kök dizin
+    "strict": true,  // TypeScript için katı mod (daha güçlü tip kontrolü)
+    "esModuleInterop": true,  // CommonJS ve ES modülleri arasındaki uyumluluğu sağlar
+    "forceConsistentCasingInFileNames": true,  // Dosya adlarında tutarlı büyük/küçük harf kontrolü
+    "skipLibCheck": true,  // Dış kütüphanelerdeki tip kontrol hatalarını atlar
+    "moduleResolution": "node",  // Node.js modül çözümleme stratejisi kullanılır
+    "resolveJsonModule": true,  // JSON dosyalarını modül olarak kullanabilme özelliği
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["src/*"]  // Burada types dizinini ekliyoruz
+    }
+ 
+  },
+  "include": ["src/**/*", "src/types/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]  // Derlemeye dahil edilmeyecek dizinler
+}
