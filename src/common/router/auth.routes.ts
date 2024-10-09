@@ -1,20 +1,17 @@
 import { Router } from 'express';
-import { loginAdmin } from '../controller/auth.controller';
+import { authController } from '../controller/auth.controller'; // Doğrudan authController örneği kullanılıyor
 import { authenticate, authorizeAdmin, authorizeMaster } from '../middleware/auth.middleware';
-import { UserRepository } from '../repository/user.repository'; 
 
 const router = Router();
-const userRepository = new UserRepository();
 
+// Admin rolü verme route'u (Sadece master yetkisi gerektirir)
+router.post('/grant-admin', authenticate, authorizeMaster, authController.grantAdminRole.bind(authController));
 
-router.post('/grant-admin', authenticate, authorizeMaster, async(req, res) => {
-  res.status(200).json({ message: 'Admin yetkisi verildi.' });
-})
 // Admin giriş route'u (JWT token üretir)
-router.post('/login', loginAdmin);
+router.post('/login', authController.login.bind(authController));
 
 // Sadece admin yetkisi gerektiren bir route
-router.get('/admin-data', authenticate, authorizeAdmin, (req, res) => {
+router.post('/admin-data', authenticate, authorizeAdmin, (req, res) => {
   res.status(200).json({ message: 'Admin yetkisi ile erişildi.' });
 });
 

@@ -1,49 +1,58 @@
-import { Request, Response } from 'express';
-import { AuthService } from '../service/auth.service';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { User } from '../models/user.schema';
 import { config } from '../config/config';
+import { Request, Response } from 'express';
 import { LoginDTO } from '../dto/auth.dto';
 
-const authService = new AuthService();
+export class AuthController {
+  // Kullanıcıyı doğrulayıp token döndürme
+  public async login(req: Request, res: Response): Promise<void> {
+    const { username, password }: LoginDTO = req.body; // LoginDTO türünü kullanarak req.body'den değer alıyoruz
 
-export const grantAdmin = async (req: Request, res: Response) => {
-  const { username } = req.body;
-  try {
-    // Admin yetkisini vermek için service katmanını çağırıyoruz
-    await authService.grantAdminRole(username);
-    res.status(200).json({ message: 'Admin yetkisi başarıyla verildi.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Yetki verme sırasında bir hata oluştu.', error });
+    try {
+      // Veritabanından kullanıcıyı bul
+      const user = await User.findOne({ username });
+      if (!user) {
+        res.status(401).json({ message: 'Geçersiz kullanıcı adı veya şifre' });
+        return;
+      }
+      console.log('User found:', user);
+      
+      
+
+      // Parolayı doğrula
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Password comparison result:', isPasswordValid);
+      if (!isPasswordValid) {
+        res.status(401).json({ message: 'Geçersiz kullanıcı adı veya şifre' });
+        return;
+      }
+
+      // Token oluştur ve döndür
+      const token = this.generateToken({ username, role: user.role });
+      res.status(200).json({ success: true, token });
+    } catch (error) {
+      res.status(500).json({ message: 'Sunucu hatası', error });
+    }
   }
-};
 
-// Admin Girişi
-export const loginAdmin = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { username, password }: LoginDTO = req.body;
-
-     // Eğer giriş verileri eksikse hata döndür
-     if (!username || !password) {
-      res.status(400).json({ message: 'Kullanıcı adı ve şifre gerekli' });
-      return;
-    }
-
-    // Eğer master giriş yapıyorsa, .env'deki bilgileri kontrol et
-    if (username === config.masterUsername && password === config.masterPassword) {
-      const masterToken = authService.generateToken({ username, role: 'master' });
-      res.status(200).json({ token: masterToken });
-      return;
-    }
-
-    // Eğer admin ise, veritabanında kontrol et
-    const token = await authService.login(username, password);
-    if (!token) {
-      res.status(401).json({ message: 'Geçersiz kullanıcı adı veya şifre' });
-      return;
-    }
-
-    // Başarılı girişte token döndür
-    res.status(200).json({ token });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+  // Token oluşturma fonksiyonu
+  public generateToken(payload: object): string {
+    return jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' });
   }
-};
+
+  // Admin rolü verme fonksiyonu
+  public async grantAdminRole(req: Request, res: Response): Promise<void> {
+    const { username } = req.body;
+    try {
+      await User.updateOne({ username }, { role: 'admin' });
+      res.status(200).json({ message: 'Admin yetkisi başarıyla verildi.' });
+    } catch (error) {
+      res.status(500).json({ message: 'Yetki verme sırasında bir hata oluştu.', error });
+    }
+  }
+}
+
+// `AuthController` sınıfının bir örneğini oluşturun
+export const authController = new AuthController();

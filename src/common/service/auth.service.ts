@@ -11,6 +11,19 @@ export class AuthService {
     return jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' }); // 1 saat geçerli bir token
   }
 
+  // Kullanıcı giriş doğrulama
+  public async validateUser(username: string, password: string): Promise<boolean> {
+    const user = await this.userRepository.findByUsername(username);
+
+    if (!user) {
+      return false;  // Kullanıcı bulunamazsa false döner
+    }
+
+    // Parolayı doğrula
+    return await bcrypt.compare(password, user.password);
+  }
+
+  // Kullanıcı giriş işlemi
   public async login(username: string, password: string): Promise<string | null> {
     const user = await this.userRepository.findByUsername(username);
 
@@ -22,6 +35,7 @@ export class AuthService {
     return this.generateToken({ username: user.username, role: user.role });
   }
 
+  // Admin yetkisi verme
   public async grantAdminRole(username: string): Promise<void> {
     const user = await this.userRepository.findByUsername(username);
     
@@ -32,5 +46,4 @@ export class AuthService {
     user.role = 'admin';
     await this.userRepository.updateUser(user);
   }
-  
 }

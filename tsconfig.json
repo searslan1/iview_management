@@ -18,6 +18,6 @@
     }
  
   },
-  "include": ["src/**/*", "src/types/**/*.d.ts"],
+  "include": ["src/**/*", "src/types/**/*.d.ts", "src/createUser.ts"],
   "exclude": ["node_modules", "dist"]  // Derlemeye dahil edilmeyecek dizinler
 }
