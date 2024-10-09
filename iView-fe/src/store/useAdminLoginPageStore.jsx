@@ -1,23 +1,23 @@
 import { create } from 'zustand';
 
 const useAdminLoginPageStore = create((set) => ({
-  email: '',
+  username: '',
   password: '',
-  setEmail: (email) => set(() => ({ email })),
+  setUsername: (username) => set(() => ({ username })),
   setPassword: (password) => set(() => ({ password })),
   
   // Login function with backend integration
   login: async () => {
-    const { email, password } = useAdminLoginPageStore.getState();
+    const { username, password } = useAdminLoginPageStore.getState();
     
     try {
       // Make a POST request to your backend API for login
-      const response = await fetch('https://your-backend-api.com/login', {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // Send email and password to the backend
+        body: JSON.stringify({ username, password }), // Send username and password to the backend
       });
 
       const data = await response.json(); // Parse the response

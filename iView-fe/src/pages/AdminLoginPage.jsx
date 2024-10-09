@@ -6,7 +6,7 @@ import useLoginStore from '../store/useAdminLoginPageStore';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const LoginPage = () => {
-  const { email, password, setEmail, setPassword, login } = useLoginStore();
+  const { username, password, setUsername, setPassword, login } = useLoginStore();
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogin = () => {
@@ -19,15 +19,15 @@ const LoginPage = () => {
       {/* Left side (Form Area) */}
       <div className="w-1/3 p-8 rounded-l-lg" style={{ backgroundColor: '#EEFAF9' }}>
         <h1 className="text-2xl font-bold mb-8 text-gray-600">Admin Log-in Page</h1>
-        <form>
+        <form onSubmit={handleLogin}>
           <div className="flex items-center">
             <MdEmail className="mr-2 mt-5 text-gray-600" /> {/* Email icon */}
             <InputField
-              label="E-mail"
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="Enter your email"
+              label="Username"
+              type="text"
+              value={username}
+              onChange={setUsername}
+              placeholder="Enter your username"
             />
           </div>
           <div className="flex items-center mt-4">
