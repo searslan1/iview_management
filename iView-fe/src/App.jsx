@@ -1,31 +1,40 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminLoginPage from './pages/AdminLoginPage';
-
-import AdminLayoutPage from './layout/AdminLayoutPage'; 
-
-// Import the pages you are routing to
-//import ManageQuestionsPage from './pages/ManageQuestionsPage';  // Make sure these paths are correct
-//import InterviewListPage from './pages/InterviewListPage';
-//import DesignLaunchPage from './pages/DesignLaunchPage';
-
+import AdminLayoutPage from './layout/AdminLayout';
+import ManageQuestionList from './pages/ManageQuestionPackagePage';
+import QuestionListPage from './pages/QuestionListPage'; 
+import PackageListPage from './pages/PackageListPage'; 
+import InterviewList from './pages/InterviewListPage';
 function App() {
   return (
     <Router>
       <Routes>
         {/* Route for Admin Login */}
         <Route path="/" element={<AdminLoginPage />} />
-            
-            {/* Diğer route'lar bu yorumun içine alındı
-            <Route path="manage-questions" element={<ManageQuestionsPage />} />
-            <Route path="interview-list" element={<InterviewListPage />} />
-            <Route path="design" element={<DesignLaunchPage />} /> */}
-            
 
-        {/* Route for Admin Layout after login */}
-        <Route path="/admin-page" element={<AdminLayoutPage />} />
-
-        {/* Add more routes if needed */}
+        {/* Admin Layout altında diğer sayfalar */}
+        <Route path="/admin-page" element={<AdminLayoutPage />}>
+          {/* Manage Questions/Packages için alt rotalar */}
+       <Route path="manage-questions-package" element={<ManageQuestionList />}>
+          
+            {/* Alt rotalar ManageQuestionList altında yüklenir 
+            */}
+            <Route path="question-list" element={<QuestionListPage />} />
+            <Route path="package-list" element={<PackageListPage />} />
+            
+          </Route>
+          
+          <Route path="interview-list" element={<InterviewList />}>
+          
+          {/* Alt rotalar ManageQuestionList altında yüklenir 
+          <Route path="question-list" element={<QuestionListPage />} />
+          <Route path="package-list" element={<PackageListPage />} />
+          */}
+          
+          
+        </Route>
+        </Route>
       </Routes>
     </Router>
   );
