@@ -1,5 +1,5 @@
  export interface IQuestionDTO {
-    questionId: string;
+    questionText: string;
     duration: number;
     tags: string[];
 }

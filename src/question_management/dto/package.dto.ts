@@ -1,16 +1,16 @@
 export interface AddRelationDto {
-    questionId: string;
+    questionText: string;
     packageName: string;
   }
   
   export interface UpdateRelationDto {
-    questionId: string;
-    newQuestionId?: string; // Opsiyonel olarak yeni questionId
+    questionText: string;
+    newQuestionText?: string; // Opsiyonel olarak yeni questionText
     newDuration?: number;   // Opsiyonel olarak yeni duration
   }
   
   export interface DeleteRelationDto {
-    questionId: string;
+    questionText: string;
     packageName: string;
   }
   

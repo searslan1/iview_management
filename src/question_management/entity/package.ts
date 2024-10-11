@@ -1,12 +1,12 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IQuestionPackageRelation extends Document {
-  questionId: string; // Soru ID'si
+  questionText: string; // Soru ID'si
   packageName: string; // Paket adı
 }
 
 const QuestionPackageRelationSchema: Schema = new Schema({
-  questionId: { type: String, required: true },
+  questionText: { type: String, required: true },
   packageName: { type: String, required: true },
 });
 

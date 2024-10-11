@@ -13,15 +13,15 @@ export class PackageService {
 
   // Yeni bir paket-soru ilişkisi oluştur
   public async addRelation(relationData: AddRelationDto): Promise<IQuestionPackageRelation> {
-    const { questionId, packageName } = relationData;
+    const { questionText, packageName } = relationData;
 
     // İş mantığı: Gerekli alanlar kontrolü
-    if (!questionId || !packageName) {
+    if (!questionText || !packageName) {
       throw new Error('Soru ID ve paket adı gereklidir.');
     }
 
     // Paket-soru ilişkisi oluşturma
-    return await this.PackageRepository.addRelation(questionId, packageName);
+    return await this.PackageRepository.addRelation(questionText, packageName);
   }
 
   // Belirli bir pakete ait ilişkili soruları getir
@@ -30,34 +30,34 @@ export class PackageService {
       throw new Error('Paket adı gereklidir.');
     }
 
-    return await this.PackageRepository.getQuestionIdsByPackage(packageName);
+    return await this.PackageRepository.getQuestionTextsByPackage(packageName);
   }
 
 
 // Paket-soru ilişkisini ve süresini güncelleme
 public async updateRelation(updateData: UpdateRelationDto): Promise<IQuestionPackageRelation | null> {
-  const { questionId, newQuestionId, newDuration } = updateData;
+  const { questionText, newQuestionText, newDuration } = updateData;
 
   // İş mantığı: Gerekli alanlar kontrolü
-  if (!questionId || (newQuestionId === undefined && newDuration === undefined)) {
+  if (!questionText || (newQuestionText === undefined && newDuration === undefined)) {
     throw new Error('Geçerli bir Soru ID ve güncellenmiş veri gereklidir.');
   }
 
   // Güncellemeyi gerçekleştir
-  return await this.PackageRepository.updateRelation(questionId, newQuestionId, newDuration);
+  return await this.PackageRepository.updateRelation(questionText, newQuestionText, newDuration);
 }
 
 
   // Paket-soru ilişkisini silme
   public async deleteRelation(deleteData: DeleteRelationDto): Promise<IQuestionPackageRelation | null> {
-    const { questionId, packageName } = deleteData;
+    const { questionText, packageName } = deleteData;
 
     // İş mantığı: Gerekli alanlar kontrolü
-    if (!questionId || !packageName) {
+    if (!questionText || !packageName) {
       throw new Error('Soru ID ve paket adı gereklidir.');
     }
 
-    return await this.PackageRepository.deleteRelation(questionId, packageName);
+    return await this.PackageRepository.deleteRelation(questionText, packageName);
   }
   public async searchQuestionsByTag(tag: string): Promise<IQuestion[]> {
     return await Question.find({ tags: tag });

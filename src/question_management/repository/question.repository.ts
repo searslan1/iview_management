@@ -15,14 +15,14 @@ export class QuestionRepository {
   }
 
   // Soru ID ile bir soru bulma
-  public async getById(questionId: string): Promise<IQuestion | null> {
-    return await Question.findOne({ questionId });
+  public async getById(questionText: string): Promise<IQuestion | null> {
+    return await Question.findOne({ questionText });
   }
 
  // Soru güncelleme işlemi
- public async updateQuestion(questionId: string, duration?: number, tags?: string[]): Promise<IQuestionDTO | null> {
+ public async updateQuestion(questionText: string, duration?: number, tags?: string[]): Promise<IQuestionDTO | null> {
   // İlgili soruyu bul
-  const question = await Question.findOne({ questionId });
+  const question = await Question.findOne({ questionText });
   if (!question) {
     return null;
   }
@@ -44,7 +44,7 @@ export class QuestionRepository {
 }
 
   // Soru silme
-  public async deleteQuestion(questionId: string): Promise<IQuestion | null> {
-    return await Question.findOneAndDelete({ questionId });
+  public async deleteQuestion(questionText: string): Promise<IQuestion | null> {
+    return await Question.findOneAndDelete({ questionText });
   }
 }

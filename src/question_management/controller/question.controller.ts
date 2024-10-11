@@ -12,11 +12,16 @@ export class QuestionController {
   // Yeni bir soru oluşturma işlemi
   public createQuestion = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { questionId, tags, duration } = req.body;
+      const { questionText, tags, duration } = req.body;
+
+     if (!questionText || questionText.trim() === "" || !duration || !tags || !Array.isArray(tags) || tags.length === 0) {
+    res.status(400).json({ message: 'Geçerli bir Soru ID, süre ve en az bir etiket gereklidir' });
+    return;
+}
 
       // Service katmanına istek gönderiyoruz
       const newQuestion = await this.questionService.createQuestion({
-        questionId,
+        questionText,
         tags,
         duration,
       } as IQuestionDTO);
@@ -42,16 +47,16 @@ export class QuestionController {
  // Soru güncelleme işlemi
  public updateQuestion = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { questionId, duration, tags } = req.body;
+    const { questionText, duration, tags } = req.body;
 
-    if (!questionId) {
+    if (!questionText) {
       res.status(400).json({ message: 'Soru ID gerekli' });
       return;
     }
 
     // Service katmanına istek gönderiyoruz
     const updatedQuestion = await this.questionService.updateQuestion({
-      questionId,
+      questionText,
       duration,
       tags,
     } as IQuestionDTO);
@@ -66,15 +71,15 @@ export class QuestionController {
    // Soru silme işlemi
    public deleteQuestion = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { questionId } = req.body;
+      const { questionText } = req.body;
 
-      if (!questionId) {
+      if (!questionText) {
         res.status(400).json({ message: 'Soru ID gerekli' });
         return;
       }
 
       // Service katmanına istek göndererek soruyu sil
-      const deletedQuestion = await this.questionService.deleteQuestion(questionId);
+      const deletedQuestion = await this.questionService.deleteQuestion(questionText);
 
       if (!deletedQuestion) {
         res.status(404).json({ message: 'Soru bulunamadı' });

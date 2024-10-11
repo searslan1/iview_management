@@ -31,8 +31,8 @@ export class QuestionService {
   }
 
   // Belirli ID ile bir soru getir
-  public async getQuestionById(questionId: string): Promise<IQuestion | null> {
-    const question = await this.questionRepository.getById(questionId);
+  public async getQuestionById(questionText: string): Promise<IQuestion | null> {
+    const question = await this.questionRepository.getById(questionText);
 
     // Eğer soru bulunamazsa hata fırlat
     if (!question) {
@@ -44,19 +44,19 @@ export class QuestionService {
 
  // Soru güncelleme işlemi
  public async updateQuestion(updateData: IQuestionDTO): Promise<IQuestionDTO | null> {
-  const { questionId, duration, tags } = updateData;
+  const { questionText, duration, tags } = updateData;
 
   // Gerekli alanların kontrolü
-  if (!questionId) {
+  if (!questionText) {
     throw new Error('Soru ID gereklidir.');
   }
 
   // Güncellemeyi gerçekleştir
-  return await this.questionRepository.updateQuestion(questionId, duration, tags);
+  return await this.questionRepository.updateQuestion(questionText, duration, tags);
 }
 
   // Soru silme işlemi
-  public async deleteQuestion(questionId: string): Promise<IQuestion | null> {
-    return await this.questionRepository.deleteQuestion(questionId);
+  public async deleteQuestion(questionText: string): Promise<IQuestion | null> {
+    return await this.questionRepository.deleteQuestion(questionText);
   }
 }

@@ -1,13 +1,13 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IQuestion extends Document {
-  questionId: string;
+  questionText: string;
   duration: number;
   tags: string[];
 }
 
 const QuestionSchema: Schema = new Schema({
-  questionId: { type: String, required: true, unique: true },  // Tutarlılık için questionId kullandık
+  questionText: { type: String, required: true},  // Tutarlılık için questionText kullandık
   duration: { type: Number, required: true },
   tags: [{ type: String }],
 });

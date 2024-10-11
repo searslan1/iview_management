@@ -37,15 +37,15 @@ export class PackageController {
  // Paket-soru ilişkisini ve süresini güncelleme
 public async updateRelation(req: Request, res: Response): Promise<void> {
   try {
-    const { questionId, newQuestionId, newDuration } = req.body;
+    const { questionText, newQuestionText, newDuration } = req.body;
 
-    if (!questionId || (newQuestionId === undefined && newDuration === undefined)) {
+    if (!questionText || (newQuestionText === undefined && newDuration === undefined)) {
       res.status(400).json({ message: 'Geçerli bir Soru ID ve güncellenmiş veri gerekli' });
       return;
     }
 
     // İlgili soruyu bul
-    const question = await Question.findOne({ questionId });
+    const question = await Question.findOne({ questionText });
 
     if (!question) {
       res.status(404).json({ message: 'Soru bulunamadı' });
@@ -53,8 +53,8 @@ public async updateRelation(req: Request, res: Response): Promise<void> {
     }
 
     // Soru ID'si güncellenmişse, yeni değerini ata
-    if (newQuestionId !== undefined) {
-      question.questionId = newQuestionId;
+    if (newQuestionText !== undefined) {
+      question.questionText = newQuestionText;
     }
 
     // Süre güncellenmişse, yeni değerini ata
@@ -73,15 +73,15 @@ public async updateRelation(req: Request, res: Response): Promise<void> {
   // Paket-soru ilişkisini silme
   public async deleteRelation(req: Request, res: Response): Promise<void> {
     try {
-      const { questionId, packageName } = req.body;
+      const { questionText, packageName } = req.body;
   
-      if (!questionId || !packageName) {
+      if (!questionText || !packageName) {
         res.status(400).json({ message: 'Soru ID ve paket adı gerekli' });
         return;
       }
   
       // İlgili soruyu bul
-      const question = await Question.findOne({ questionId });
+      const question = await Question.findOne({ questionText });
   
       if (!question) {
         res.status(404).json({ message: 'Soru bulunamadı' });
@@ -97,7 +97,7 @@ public async updateRelation(req: Request, res: Response): Promise<void> {
       }
   
       // Tags boş kaldıysa sadece paket ilişkisini sil
-      await QuestionPackageRelation.findOneAndDelete({ questionId, packageName });
+      await QuestionPackageRelation.findOneAndDelete({ questionText, packageName });
   
       res.status(200).json({ message: 'Paket-soru ilişkisi başarıyla silindi', question });
     } catch (error) {
@@ -105,7 +105,7 @@ public async updateRelation(req: Request, res: Response): Promise<void> {
       res.status(500).json({ message: 'Paket-soru ilişkisi silinirken bir hata oluştu', error });
     }
   }
-  
+
   public async searchQuestions(req: Request, res: Response): Promise<void> {
     try {
       const { tag } = req.query;
