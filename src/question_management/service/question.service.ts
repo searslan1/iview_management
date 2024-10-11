@@ -42,34 +42,21 @@ export class QuestionService {
     return question;
   }
 
-  // Soru güncelleme işlemi
-  public async updateQuestion(questionId: string, updateData: Partial<IQuestion>): Promise<IQuestion | null> {
-    const question = await this.questionRepository.getById(questionId);
+ // Soru güncelleme işlemi
+ public async updateQuestion(updateData: IQuestionDTO): Promise<IQuestionDTO | null> {
+  const { questionId, duration, tags } = updateData;
 
-    // Eğer soru yoksa hata fırlat
-    if (!question) {
-      throw new Error('Güncellenmek istenen soru bulunamadı.');
-    }
-
-    // İş mantığı: Süre negatif olamaz
-    if (updateData.duration !== undefined && updateData.duration <= 0) {
-      throw new Error('Süre sıfırdan büyük olmalıdır.');
-    }
-
-    // Soru güncelleme işlemi
-    return await this.questionRepository.update(questionId, updateData);
+  // Gerekli alanların kontrolü
+  if (!questionId) {
+    throw new Error('Soru ID gereklidir.');
   }
 
+  // Güncellemeyi gerçekleştir
+  return await this.questionRepository.updateQuestion(questionId, duration, tags);
+}
+
   // Soru silme işlemi
-  public async deleteQuestion(questionId: string): Promise<void> {
-    const question = await this.questionRepository.getById(questionId);
-
-    // Eğer soru yoksa hata fırlat
-    if (!question) {
-      throw new Error('Silinmek istenen soru bulunamadı.');
-    }
-
-    // Soru silme işlemi
-    await this.questionRepository.delete(questionId);
+  public async deleteQuestion(questionId: string): Promise<IQuestion | null> {
+    return await this.questionRepository.deleteQuestion(questionId);
   }
 }

@@ -3,6 +3,7 @@ import { connectDB } from './db/db';
 import commonRouter from './common/router/auth.routes';
 import questionRouter from './question_management/routes/question.routes';
 import registerRoutes from './common/router/register.routes';
+import packageRouter from './question_management/routes/package.routes';
 
 const app = express();
 const cors = require('cors');
@@ -13,13 +14,13 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 
-// Route'ları kullan
-// Register rotalarını kullan
-app.use('/api/register', registerRoutes);
+
+app.use('/api/register', registerRoutes); //admin kaydı için
 app.use('/api/auth', commonRouter); // Auth işlemleri için
 app.use('/api/questions', questionRouter); // Soru yönetimi için
+app.use('/api/packages', packageRouter); //paket yönetimi için
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Sunucu ${PORT} portunda çalışıyor`);
 });

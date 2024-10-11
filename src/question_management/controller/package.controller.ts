@@ -1,106 +1,124 @@
 import { Request, Response } from 'express';
-import {QuestionPackageRelation} from '../entity/package';
-import {Question} from '../entity/question';
+import { Question } from '../entity/question';
+import { PackageService } from '../service/package.service';
+import { QuestionPackageRelation } from '../entity/package';
 
-class QuestionPackageController {
+export class PackageController {
+  private packageService: PackageService;
+
   
-  // Yeni bir paket-soru ilişkisi ekleme
-  public async addRelation(req: Request, res: Response): Promise<void> {
-    try {
-      const { questionId, packageName } = req.body;
 
-      if (!questionId || !packageName) {
-        res.status(400).json({ message: 'Soru ID ve paket adı gerekli' });
-        return;
-      }
-
-      // Yeni ilişki oluşturma
-      const newRelation = new QuestionPackageRelation({
-        questionId,
-        packageName,
-      });
-
-      // Veritabanına kaydetme
-      await newRelation.save();
-      res.status(201).json({ message: 'Paket-soru ilişkisi başarıyla eklendi', newRelation });
-    } catch (error) {
-      res.status(500).json({ message: 'Paket-soru ilişkisi eklenirken bir hata oluştu', error });
-    }
+  constructor() {
+    this.packageService = new PackageService();
   }
 
   // Belirli bir pakete ait soruları listeleme
   public async getQuestionsByPackage(req: Request, res: Response): Promise<void> {
     try {
       const { packageName } = req.query;
-
+  
       if (!packageName) {
         res.status(400).json({ message: 'Paket adı gerekli' });
         return;
       }
-
-      // Paket adına göre ilişkileri bul
-      const relations = await QuestionPackageRelation.find({ packageName });
-      const questionIds = relations.map(relation => relation.questionId);
-
-      // İlgili soruları veritabanından çek
-      const questions = await Question.find({ questionId: { $in: questionIds } });
-
+  
+      // Paket adını tags alanında arıyoruz
+      const questions = await Question.find({ tags: packageName });
+  
       res.status(200).json(questions);
     } catch (error) {
+      console.error('Error fetching questions:', error);
       res.status(500).json({ message: 'Sorular listelenirken bir hata oluştu', error });
     }
   }
+  
 
-  // Paket-soru ilişkisini güncelleme
-  public async updateRelation(req: Request, res: Response): Promise<void> {
-    try {
-      const { questionId, newPackageName } = req.body;
 
-      if (!questionId || !newPackageName) {
-        res.status(400).json({ message: 'Soru ID ve yeni paket adı gerekli' });
-        return;
-      }
+ // Paket-soru ilişkisini ve süresini güncelleme
+public async updateRelation(req: Request, res: Response): Promise<void> {
+  try {
+    const { questionId, newQuestionId, newDuration } = req.body;
 
-      // Mevcut ilişkiyi bul ve güncelle
-      const relation = await QuestionPackageRelation.findOne({ questionId });
-
-      if (!relation) {
-        res.status(404).json({ message: 'Paket-soru ilişkisi bulunamadı' });
-        return;
-      }
-
-      relation.packageName = newPackageName;
-      await relation.save();
-
-      res.status(200).json({ message: 'Paket-soru ilişkisi başarıyla güncellendi', relation });
-    } catch (error) {
-      res.status(500).json({ message: 'Paket-soru ilişkisi güncellenirken bir hata oluştu', error });
+    if (!questionId || (newQuestionId === undefined && newDuration === undefined)) {
+      res.status(400).json({ message: 'Geçerli bir Soru ID ve güncellenmiş veri gerekli' });
+      return;
     }
-  }
 
+    // İlgili soruyu bul
+    const question = await Question.findOne({ questionId });
+
+    if (!question) {
+      res.status(404).json({ message: 'Soru bulunamadı' });
+      return;
+    }
+
+    // Soru ID'si güncellenmişse, yeni değerini ata
+    if (newQuestionId !== undefined) {
+      question.questionId = newQuestionId;
+    }
+
+    // Süre güncellenmişse, yeni değerini ata
+    if (newDuration !== undefined) {
+      question.duration = newDuration;
+    }
+
+    await question.save();
+
+    res.status(200).json({ message: 'Soru başarıyla güncellendi', question });
+  } catch (error) {
+    console.error('Error updating relation:', error);
+    res.status(500).json({ message: 'Soru güncellenirken bir hata oluştu', error });
+  }
+}
   // Paket-soru ilişkisini silme
   public async deleteRelation(req: Request, res: Response): Promise<void> {
     try {
       const { questionId, packageName } = req.body;
-
+  
       if (!questionId || !packageName) {
         res.status(400).json({ message: 'Soru ID ve paket adı gerekli' });
         return;
       }
-
-      // İlişkiyi bul ve sil
-      const deletedRelation = await QuestionPackageRelation.findOneAndDelete({ questionId, packageName });
-
-      if (!deletedRelation) {
-        res.status(404).json({ message: 'Paket-soru ilişkisi bulunamadı' });
+  
+      // İlgili soruyu bul
+      const question = await Question.findOne({ questionId });
+  
+      if (!question) {
+        res.status(404).json({ message: 'Soru bulunamadı' });
         return;
       }
-
-      res.status(200).json({ message: 'Paket-soru ilişkisi başarıyla silindi', deletedRelation });
+  
+      // Paket adını tags'ten çıkar
+      question.tags = question.tags.filter(tag => tag !== packageName);
+  
+      // Eğer tags boş değilse, soruyu kaydet
+      if (question.tags.length > 0) {
+        await question.save();
+      }
+  
+      // Tags boş kaldıysa sadece paket ilişkisini sil
+      await QuestionPackageRelation.findOneAndDelete({ questionId, packageName });
+  
+      res.status(200).json({ message: 'Paket-soru ilişkisi başarıyla silindi', question });
     } catch (error) {
+      console.error('Error deleting relation:', error);
       res.status(500).json({ message: 'Paket-soru ilişkisi silinirken bir hata oluştu', error });
     }
   }
-}
+  
+  public async searchQuestions(req: Request, res: Response): Promise<void> {
+    try {
+      const { tag } = req.query;
+      if (!tag) {
+        res.status(400).json({ message: 'Tag gereklidir.' });
+        return;
+      }
+      const questions = await this.packageService.searchQuestionsByTag(tag as string);
+      res.status(200).json(questions);
+    } catch (error) {
+      console.error('Error searching questions:', error);
+      res.status(500).json({ message: 'Arama sırasında bir hata oluştu', error });
+    }
+  }  
+}  
 
-export default new QuestionPackageController();

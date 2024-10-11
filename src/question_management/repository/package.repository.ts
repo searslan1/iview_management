@@ -1,6 +1,6 @@
 import { QuestionPackageRelation, IQuestionPackageRelation } from '../entity/package';
 
-export class QuestionPackageRepository {
+export class PackageRepository {
   static deleteRelation(questionId: string, packageName: string): IQuestionPackageRelation | PromiseLike<IQuestionPackageRelation | null> | null {
       throw new Error('Method not implemented.');
   }
@@ -31,15 +31,27 @@ export class QuestionPackageRepository {
     return relations.map(relation => relation.questionId);
   }
 
-  // Paket-soru ilişkisini güncelleme
-  public async updateRelation(questionId: string, newPackageName: string): Promise<IQuestionPackageRelation | null> {
-    const relation = await QuestionPackageRelation.findOne({ questionId });
-    if (relation) {
-      relation.packageName = newPackageName;
-      await relation.save();
+ // Paket-soru ilişkisini güncelleme
+public async updateRelation(questionId: string, newQuestionId?: string, newDuration?: number): Promise<IQuestionPackageRelation | null> {
+  const relation = await QuestionPackageRelation.findOne({ questionId });
+  
+  if (relation) {
+    // Eğer yeni questionId varsa, güncelle
+    if (newQuestionId !== undefined) {
+      relation.questionId = newQuestionId;
     }
-    return relation;
+    
+    // Eğer yeni duration varsa, güncelle
+    if (newDuration !== undefined) {
+      (relation as any).duration = newDuration; // duration alanı QuestionPackageRelation şemasında tanımlı değilse "any" türünde dönüşüm yapılabilir
+    }
+    
+    await relation.save();
   }
+
+  return relation;
+}
+
 
   // Paket-soru ilişkisini silme
   public async deleteRelation(questionId: string, packageName: string): Promise<IQuestionPackageRelation | null> {

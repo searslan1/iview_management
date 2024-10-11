@@ -24,7 +24,8 @@ export class QuestionController {
       // Başarılı yanıt
       res.status(201).json(newQuestion);
     } catch (error) {
-      res.status(400).json({ error: onmessage });
+      console.error('Error creating question:', error);
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   };
 
@@ -34,55 +35,57 @@ export class QuestionController {
       const questions = await this.questionService.getQuestions();
       res.status(200).json(questions);
     } catch (error) {
-      res.status(500).json({ error: onmessage });
+      console.error('Error fetching questions:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   };
+ // Soru güncelleme işlemi
+ public updateQuestion = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { questionId, duration, tags } = req.body;
 
-  // Belirli bir soru ID'si ile soruyu getirme
-  public getQuestionById = async (req: Request, res: Response): Promise<void> => {
+    if (!questionId) {
+      res.status(400).json({ message: 'Soru ID gerekli' });
+      return;
+    }
+
+    // Service katmanına istek gönderiyoruz
+    const updatedQuestion = await this.questionService.updateQuestion({
+      questionId,
+      duration,
+      tags,
+    } as IQuestionDTO);
+
+    // Başarılı yanıt
+    res.status(200).json({ message: 'Soru başarıyla güncellendi', updatedQuestion });
+  } catch (error) {
+    console.error('Error updating question:', error);
+    res.status(500).json({ message: 'Soru güncellenirken bir hata oluştu', error });
+  }
+};
+   // Soru silme işlemi
+   public deleteQuestion = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
-      const question = await this.questionService.getQuestionById(id);
+      const { questionId } = req.body;
 
-      if (!question) {
-         res.status(404).json({ message: 'Soru bulunamadı.' });
-         return;
+      if (!questionId) {
+        res.status(400).json({ message: 'Soru ID gerekli' });
+        return;
       }
 
-      res.status(200).json(question);
-    } catch (error) {
-      res.status(500).json({ error: onmessage });
-    }
-  };
+      // Service katmanına istek göndererek soruyu sil
+      const deletedQuestion = await this.questionService.deleteQuestion(questionId);
 
-  // Belirli bir soru ID'si ile soruyu güncelleme işlemi
-  public updateQuestion = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const updateData = req.body;
-
-      const updatedQuestion = await this.questionService.updateQuestion(id, updateData);
-
-      if (!updatedQuestion) {
-        res.status(404).json({ message: 'Soru bulunamadı.' });
-        return ;
+      if (!deletedQuestion) {
+        res.status(404).json({ message: 'Soru bulunamadı' });
+        return;
       }
 
-      res.status(200).json(updatedQuestion);
+      res.status(200).json({ message: 'Soru başarıyla silindi', deletedQuestion });
     } catch (error) {
-      res.status(400).json({ error: onmessage });
-    }
-  };
-
-  // Belirli bir soru ID'si ile soruyu silme işlemi
-  public deleteQuestion = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-
-      await this.questionService.deleteQuestion(id);
-      res.status(204).send(); // Silme işlemi başarılıysa, 204 No Content döndürülür.
-    } catch (error) {
-      res.status(400).json({ error: onmessage });
+      console.error('Error deleting question:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   };
 }
+

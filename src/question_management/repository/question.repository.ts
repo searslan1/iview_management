@@ -1,3 +1,4 @@
+import { IQuestionDTO } from '../dto/question.dto';
 import { Question, IQuestion } from '../entity/question';
 
 // Soru repository fonksiyonları burada yönetilir.
@@ -18,13 +19,32 @@ export class QuestionRepository {
     return await Question.findOne({ questionId });
   }
 
-  // Soruyu güncelleme
-  public async update(questionId: string, updateData: Partial<IQuestion>): Promise<IQuestion | null> {
-    return await Question.findOneAndUpdate({ questionId }, updateData, { new: true });
+ // Soru güncelleme işlemi
+ public async updateQuestion(questionId: string, duration?: number, tags?: string[]): Promise<IQuestionDTO | null> {
+  // İlgili soruyu bul
+  const question = await Question.findOne({ questionId });
+  if (!question) {
+    return null;
   }
 
+  // Soru süresi güncellenmişse, duration alanını güncelle
+  if (duration !== undefined) {
+    question.duration = duration;
+  }
+
+  // Tags güncellenmişse, tags alanını güncelle
+  if (tags !== undefined) {
+    question.tags = tags;
+  }
+
+  // Güncellemeyi veritabanına kaydet
+  await question.save();
+
+  return question;
+}
+
   // Soru silme
-  public async delete(questionId: string): Promise<void> {
-    await Question.deleteOne({ questionId });
+  public async deleteQuestion(questionId: string): Promise<IQuestion | null> {
+    return await Question.findOneAndDelete({ questionId });
   }
 }

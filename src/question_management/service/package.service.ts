@@ -1,12 +1,14 @@
 import { IQuestionPackageRelation } from '../entity/package';
-import {QuestionPackageRepository} from '../repository/package.repository';
+import {PackageRepository} from '../repository/package.repository';
 import { AddRelationDto, UpdateRelationDto, DeleteRelationDto } from '../dto/package.dto';
+import { IQuestion, Question } from '../entity/question'; // Question ve IQuestion'ı doğru yerden içe aktarın
 
-export class QuestionPackageService {
-  private questionPackageRepository: typeof QuestionPackageRepository;
+
+export class PackageService {
+  private PackageRepository: PackageRepository;
 
   constructor() {
-    this.questionPackageRepository = QuestionPackageRepository;
+    this.PackageRepository = new PackageRepository();
   }
 
   // Yeni bir paket-soru ilişkisi oluştur
@@ -19,7 +21,7 @@ export class QuestionPackageService {
     }
 
     // Paket-soru ilişkisi oluşturma
-    return await this.questionPackageRepository.addRelation(questionId, packageName);
+    return await this.PackageRepository.addRelation(questionId, packageName);
   }
 
   // Belirli bir pakete ait ilişkili soruları getir
@@ -28,20 +30,23 @@ export class QuestionPackageService {
       throw new Error('Paket adı gereklidir.');
     }
 
-    return await this.questionPackageRepository.getQuestionIdsByPackage(packageName);
+    return await this.PackageRepository.getQuestionIdsByPackage(packageName);
   }
 
-  // Paket-soru ilişkisini güncelleme
-  public async updateRelation(updateData: UpdateRelationDto): Promise<IQuestionPackageRelation | null> {
-    const { questionId, newPackageName } = updateData;
 
-    // İş mantığı: Gerekli alanlar kontrolü
-    if (!questionId || !newPackageName) {
-      throw new Error('Soru ID ve yeni paket adı gereklidir.');
-    }
+// Paket-soru ilişkisini ve süresini güncelleme
+public async updateRelation(updateData: UpdateRelationDto): Promise<IQuestionPackageRelation | null> {
+  const { questionId, newQuestionId, newDuration } = updateData;
 
-    return await this.questionPackageRepository.updateRelation(questionId, newPackageName);
+  // İş mantığı: Gerekli alanlar kontrolü
+  if (!questionId || (newQuestionId === undefined && newDuration === undefined)) {
+    throw new Error('Geçerli bir Soru ID ve güncellenmiş veri gereklidir.');
   }
+
+  // Güncellemeyi gerçekleştir
+  return await this.PackageRepository.updateRelation(questionId, newQuestionId, newDuration);
+}
+
 
   // Paket-soru ilişkisini silme
   public async deleteRelation(deleteData: DeleteRelationDto): Promise<IQuestionPackageRelation | null> {
@@ -52,7 +57,11 @@ export class QuestionPackageService {
       throw new Error('Soru ID ve paket adı gereklidir.');
     }
 
-    return await this.questionPackageRepository.deleteRelation(questionId, packageName);
+    return await this.PackageRepository.deleteRelation(questionId, packageName);
   }
+  public async searchQuestionsByTag(tag: string): Promise<IQuestion[]> {
+    return await Question.find({ tags: tag });
+  }
+  
 }
 
