@@ -70,25 +70,30 @@ export class QuestionController {
       const questionId = req.params.id;
       const { questionText, duration, tags } = req.body;
 
-      // Gelen ID kontrol ediliyor
+      // Validate that the tags field is an array
+      if (!Array.isArray(tags) || tags.length === 0) {
+        res.status(400).json({ message: "Tags must be a non-empty array" });
+        return;
+      }
+
+      // Other validations
       if (!questionId) {
         res.status(400).json({ message: "Soru ID gerekli" });
         return;
       }
 
-      // Güncellenecek soru verileri kontrol ediliyor
       if (!questionText || questionText.trim() === "") {
         res.status(400).json({ message: "Soru metni gerekli" });
         return;
       }
 
-      // Service katmanına istek gönderiyoruz
+      // Call the service layer to update the question
       const updatedQuestion = await this.questionService.updateQuestion(
-        questionId, // ID'yi burada kullanıyoruz
+        questionId,
         {
           questionText,
           duration,
-          tags,
+          tags, // Pass the validated tags array
         } as IQuestionDTO
       );
 
@@ -97,7 +102,7 @@ export class QuestionController {
         return;
       }
 
-      // Başarılı yanıt
+      // Successful response
       res
         .status(200)
         .json({ message: "Soru başarıyla güncellendi", updatedQuestion });

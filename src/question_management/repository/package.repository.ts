@@ -1,61 +1,101 @@
-import { QuestionPackageRelation, IQuestionPackageRelation } from '../entity/package';
+import { IQuestion, Question } from "../entity/question";
+import {
+  QuestionPackageRelation,
+  IQuestionPackageRelation,
+} from "../entity/package";
 
 export class PackageRepository {
-  static deleteRelation(questionText: string, packageName: string): IQuestionPackageRelation | PromiseLike<IQuestionPackageRelation | null> | null {
-      throw new Error('Method not implemented.');
-  }
-  static updateRelation(questionText: string, newPackageName: string): IQuestionPackageRelation | PromiseLike<IQuestionPackageRelation | null> | null {
-      throw new Error('Method not implemented.');
-  }
-  static getQuestionTextsByPackage(packageName: string): string[] | PromiseLike<string[]> {
-      throw new Error('Method not implemented.');
-  }
-
-  static addRelation(questionText: string, packageName: string): IQuestionPackageRelation | PromiseLike<IQuestionPackageRelation> {
-      throw new Error('Method not implemented.');
-  }
   // Yeni bir paket-soru ilişkisi ekleme
-  public async addRelation(questionText: string, packageName: string): Promise<IQuestionPackageRelation> {
-    const newRelation = new QuestionPackageRelation({ questionText, packageName });
+  public async addRelation(
+    questionText: string,
+    packageName: string
+  ): Promise<IQuestionPackageRelation> {
+    const newRelation = new QuestionPackageRelation({
+      questionText,
+      packageName,
+    });
     return await newRelation.save();
   }
 
   // Belirli bir pakete ait ilişkileri bulma
-  public async findRelationsByPackage(packageName: string): Promise<IQuestionPackageRelation[]> {
+  public async findRelationsByPackage(
+    packageName: string
+  ): Promise<IQuestionPackageRelation[]> {
     return await QuestionPackageRelation.find({ packageName });
   }
 
   // İlişkili soruların ID'lerini çekme
-  public async getQuestionTextsByPackage(packageName: string): Promise<string[]> {
-    const relations = await this.findRelationsByPackage(packageName);
-    return relations.map(relation => relation.questionText);
+  public async getQuestionTextsByPackage(
+    packageName: string
+  ): Promise<string[]> {
+    const relations = await this.findRelationsByPackage(packageName); // Paket-soru ilişkilerini buluyoruz
+    console.log("Relations:", relations);
+    return relations.map((relation) => relation.questionText); // İlişkili soru metinlerini döndürüyoruz
   }
 
- // Paket-soru ilişkisini güncelleme
-public async updateRelation(questionText: string, newQuestionText?: string, newDuration?: number): Promise<IQuestionPackageRelation | null> {
-  const relation = await QuestionPackageRelation.findOne({ questionText });
-  
-  if (relation) {
+  // Paket-soru ilişkisini güncelleme
+  public async updateQuestion(
+    questionID: string, // questionID ile arama yapacağız
+    newQuestionText?: string,
+    newDuration?: number
+  ): Promise<IQuestion | null> {
+    // Soru ID'sine göre güncelleme yap
+    const question = await Question.findById(questionID); // questionID ile güncelleme yapıyoruz
+
+    if (!question) {
+      throw new Error("Soru bulunamadı");
+    }
+
     // Eğer yeni questionText varsa, güncelle
     if (newQuestionText !== undefined) {
-      relation.questionText = newQuestionText;
+      question.questionText = newQuestionText;
     }
-    
+
     // Eğer yeni duration varsa, güncelle
     if (newDuration !== undefined) {
-      (relation as any).duration = newDuration; // duration alanı QuestionPackageRelation şemasında tanımlı değilse "any" türünde dönüşüm yapılabilir
+      question.duration = newDuration;
     }
-    
-    await relation.save();
+
+    await question.save();
+
+    return question;
   }
-
-  return relation;
-}
-
 
   // Paket-soru ilişkisini silme
-  public async deleteRelation(questionText: string, packageName: string): Promise<IQuestionPackageRelation | null> {
-    return await QuestionPackageRelation.findOneAndDelete({ questionText, packageName });
+  public async deleteRelation(
+    questionText: string,
+    packageName: string
+  ): Promise<IQuestionPackageRelation | null> {
+    return await QuestionPackageRelation.findOneAndDelete({
+      questionText,
+      packageName,
+    });
+  }
+
+  // Paket isimlerini çekme
+  public async getPackageNames(): Promise<string[]> {
+    // Question modelinden unique tags alanlarını çekiyoruz
+    const packageNames = await Question.distinct("tags");
+    return packageNames;
+  }
+  // Pakete ait ilişkili tüm soruları tam detaylarıyla getiren fonksiyon
+  public async getQuestionsByPackage(
+    packageName: string
+  ): Promise<IQuestion[]> {
+    // İlgili paket ismiyle ilişkili soru ilişkilerini çekiyoruz
+    const relations = await QuestionPackageRelation.find({ packageName });
+
+    // İlişkili her soru için detaylarını çekiyoruz
+    const questions = await Promise.all(
+      relations.map(async (relation) => {
+        // Veritabanında sorunun tamamını çekiyoruz (questionText, duration, tags, vb.)
+        return await Question.findOne({ questionText: relation.questionText });
+      })
+    );
+
+    // Null olan sonuçları filtreleyerek sadece geçerli soru nesnelerini döndürüyoruz
+    return questions.filter(
+      (question): question is IQuestion => question !== null
+    );
   }
 }
-

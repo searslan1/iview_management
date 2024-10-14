@@ -1,8 +1,11 @@
-import { IQuestionPackageRelation } from '../entity/package';
-import {PackageRepository} from '../repository/package.repository';
-import { AddRelationDto, UpdateRelationDto, DeleteRelationDto } from '../dto/package.dto';
-import { IQuestion, Question } from '../entity/question'; // Question ve IQuestion'ı doğru yerden içe aktarın
-
+import { IQuestion } from "../entity/question";
+import { PackageRepository } from "../repository/package.repository";
+import {
+  AddRelationDto,
+  UpdateRelationDto,
+  DeleteRelationDto,
+} from "../dto/package.dto";
+import { IQuestionPackageRelation } from "../entity/package";
 
 export class PackageService {
   private PackageRepository: PackageRepository;
@@ -11,57 +14,100 @@ export class PackageService {
     this.PackageRepository = new PackageRepository();
   }
 
-  // Yeni bir paket-soru ilişkisi oluştur
-  public async addRelation(relationData: AddRelationDto): Promise<IQuestionPackageRelation> {
-    const { questionText, packageName } = relationData;
+  // Paket-soru ilişkisini ve soruyu güncelleme
+  public async updateRelation(
+    updateData: UpdateRelationDto
+  ): Promise<IQuestion | null> {
+    try {
+      const { questionID, newQuestionText, newDuration } = updateData;
 
-    // İş mantığı: Gerekli alanlar kontrolü
-    if (!questionText || !packageName) {
-      throw new Error('Soru ID ve paket adı gereklidir.');
+      // İş mantığı: Gerekli alanlar kontrolü
+      if (!questionID) {
+        throw new Error("Geçerli bir Soru ID gereklidir.");
+      }
+
+      if (newQuestionText === undefined && newDuration === undefined) {
+        throw new Error("Güncellenecek bir veri bulunmalıdır.");
+      }
+
+      // Soruyu güncelleme işlemi
+      return await this.PackageRepository.updateQuestion(
+        questionID,
+        newQuestionText,
+        newDuration
+      ); // Artık 'updateQuestion' fonksiyonu questionID üzerinden çalışacak
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Soru güncellenirken hata: ${error.message}`);
+      } else {
+        throw new Error("Bilinmeyen bir hata oluştu.");
+      }
     }
-
-    // Paket-soru ilişkisi oluşturma
-    return await this.PackageRepository.addRelation(questionText, packageName);
   }
 
   // Belirli bir pakete ait ilişkili soruları getir
-  public async getQuestionsByPackage(packageName: string): Promise<string[]> {
+  public async getQuestionsByPackage(
+    packageName: string
+  ): Promise<IQuestion[]> {
     if (!packageName) {
-      throw new Error('Paket adı gereklidir.');
+      throw new Error("Paket adı gereklidir.");
     }
 
-    return await this.PackageRepository.getQuestionTextsByPackage(packageName);
+    // Repository'den tam soru nesnelerini çekiyoruz
+    const questions = await this.PackageRepository.getQuestionsByPackage(
+      packageName
+    );
+
+    if (!questions || questions.length === 0) {
+      throw new Error("Pakete ait soru bulunamadı.");
+    }
+
+    return questions; // Tam soru nesnelerini döndürüyoruz
   }
-
-
-// Paket-soru ilişkisini ve süresini güncelleme
-public async updateRelation(updateData: UpdateRelationDto): Promise<IQuestionPackageRelation | null> {
-  const { questionText, newQuestionText, newDuration } = updateData;
-
-  // İş mantığı: Gerekli alanlar kontrolü
-  if (!questionText || (newQuestionText === undefined && newDuration === undefined)) {
-    throw new Error('Geçerli bir Soru ID ve güncellenmiş veri gereklidir.');
-  }
-
-  // Güncellemeyi gerçekleştir
-  return await this.PackageRepository.updateRelation(questionText, newQuestionText, newDuration);
-}
-
 
   // Paket-soru ilişkisini silme
-  public async deleteRelation(deleteData: DeleteRelationDto): Promise<IQuestionPackageRelation | null> {
-    const { questionText, packageName } = deleteData;
+  public async deleteRelation(
+    deleteData: DeleteRelationDto
+  ): Promise<IQuestionPackageRelation | null> {
+    try {
+      const { questionText, packageName } = deleteData;
 
-    // İş mantığı: Gerekli alanlar kontrolü
-    if (!questionText || !packageName) {
-      throw new Error('Soru ID ve paket adı gereklidir.');
+      // İş mantığı: Gerekli alanlar kontrolü
+      if (!questionText || !packageName) {
+        throw new Error("Soru ID ve paket adı gereklidir.");
+      }
+
+      return await this.PackageRepository.deleteRelation(
+        questionText,
+        packageName
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Paket-soru ilişkisi silinirken hata: ${error.message}`
+        );
+      } else {
+        throw new Error("Bilinmeyen bir hata oluştu.");
+      }
     }
+  }
 
-    return await this.PackageRepository.deleteRelation(questionText, packageName);
+  // Paket isimlerini çekme
+  public async getPackageNames(): Promise<string[]> {
+    try {
+      return await this.PackageRepository.getPackageNames();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Paket isimleri alınırken hata oluştu: ${error.message}`
+        );
+      } else {
+        throw new Error("Bilinmeyen bir hata oluştu.");
+      }
+    }
   }
-  public async searchQuestionsByTag(tag: string): Promise<IQuestion[]> {
-    return await Question.find({ tags: tag });
+  public async addRelation(relationData: AddRelationDto) {
+    const { questionText, packageName } = relationData;
+    return await this.PackageRepository.addRelation(questionText, packageName);
   }
-  
 }
-

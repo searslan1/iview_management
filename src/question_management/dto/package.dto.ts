@@ -4,10 +4,11 @@ export interface AddRelationDto {
   }
   
   export interface UpdateRelationDto {
-    questionText: string;
-    newQuestionText?: string; // Opsiyonel olarak yeni questionText
-    newDuration?: number;   // Opsiyonel olarak yeni duration
+    questionID: string; // Soru ID'si
+    newQuestionText?: string; // Yeni soru metni
+    newDuration?: number; // Yeni süre
   }
+
   
   export interface DeleteRelationDto {
     questionText: string;
