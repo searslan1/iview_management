@@ -9,4 +9,8 @@ router.get("/", questionController.getAllQuestions); // Tüm soruları getir
 router.delete("/delete/:id", questionController.deleteQuestion);
 router.put("/update/:id", questionController.updateQuestion);
 router.post("/reorder", questionController.reorderQuestions);
+router.get("/tags", questionController.getAllTags);
+router.get("/tag/:tag", questionController.getQuestionsByTag);
+router.get("/:id", questionController.getQuestionById); // Belirli bir soruyu getir
+
 export default router;

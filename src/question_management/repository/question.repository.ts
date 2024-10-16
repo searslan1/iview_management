@@ -1,63 +1,41 @@
+import { Question } from "../entity/question";
 import { IQuestionDTO } from "../dto/question.dto";
-import { Question, IQuestion } from "../entity/question";
 
-// Soru repository fonksiyonları burada yönetilir.
 export class QuestionRepository {
-  // Yeni bir soru kaydetme
-  public async save(questionData: IQuestion): Promise<IQuestion> {
-    const question = new Question(questionData);
-    return await question.save();
+  public async create(questionData: IQuestionDTO) {
+    const newQuestion = new Question(questionData);
+    return await newQuestion.save();
   }
 
-  // Tüm soruları listeleme
-  public async getAll(): Promise<IQuestion[]> {
+  public async findAll() {
     return await Question.find();
   }
 
-  // Soru ID ile bir soru bulma
-  public async getById(questionText: string): Promise<IQuestion | null> {
-    return await Question.findOne({ questionText });
+  public async findById(questionId: string) {
+    return await Question.findById(questionId);
   }
 
-  // Soru güncelleme işlemi
-  public async updateQuestion(
-    questionText: string,
-    duration?: number,
-    tags?: string[]
-  ): Promise<IQuestionDTO | null> {
-    // İlgili soruyu bul
-    const question = await Question.findOne({ questionText });
-    if (!question) {
-      return null;
-    }
-
-    // Soru süresi güncellenmişse, duration alanını güncelle
-    if (duration !== undefined) {
-      question.duration = duration;
-    }
-
-    // Tags güncellenmişse, tags alanını güncelle
-    if (tags !== undefined) {
-      question.tags = tags;
-    }
-
-    // Güncellemeyi veritabanına kaydet
-    await question.save();
-
-    return question;
+  public async update(questionId: string, questionData: IQuestionDTO) {
+    return await Question.findByIdAndUpdate(questionId, questionData, {
+      new: true,
+    });
+  }
+  // Tüm tag'leri almak
+  public async getAllTags(): Promise<string[]> {
+    return await Question.distinct("tags"); // 'tags' alanındaki tüm benzersiz değerleri alır
   }
 
-  // Soru silme
-  public async deleteQuestion(questionText: string): Promise<IQuestion | null> {
-    return await Question.findOneAndDelete({ questionText });
+  // Belirli bir tag'e göre soruları ve süreleri getirmek
+  public async getQuestionsByTag(tag: string) {
+    return await Question.find({ tags: tag })
+      .select("questionText duration") // Sadece 'questionText' ve 'duration' alanlarını seçiyoruz
+      .lean();
   }
-  public async reorderQuestions(
-    reorderedQuestions: IQuestion[]
-  ): Promise<void> {
-    for (let i = 0; i < reorderedQuestions.length; i++) {
-      const questionId = reorderedQuestions[i]._id;
-      const newOrder = i;
-      await Question.findByIdAndUpdate(questionId, { order: newOrder });
-    }
+  public async delete(questionId: string) {
+    return await Question.findByIdAndDelete(questionId);
+  }
+
+  public async updateOrder(questionId: string, order: number) {
+    return await Question.findByIdAndUpdate(questionId, { order });
   }
 }

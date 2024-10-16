@@ -3,8 +3,6 @@ import { QuestionService } from "../service/question.service";
 import { IQuestionDTO } from "../dto/question.dto";
 import { Question } from "../entity/question";
 
-
-
 export class QuestionController {
   private questionService: QuestionService;
 
@@ -20,15 +18,11 @@ export class QuestionController {
     try {
       const { questionText, tags, duration } = req.body;
 
-      // Veritabanındaki mevcut soru sayısını alarak sıradaki `order` değerini hesaplıyoruz
-      const questionCount = await Question.countDocuments();
-
       // DTO formatında yeni soruyu oluşturuyoruz
       const newQuestionData: IQuestionDTO = {
         questionText,
         tags,
         duration,
-        order: questionCount + 1, // Yeni soruya sıradaki `order` değerini veriyoruz
       };
 
       // DTO'yu kullanarak yeni soruyu kaydediyoruz
@@ -44,17 +38,17 @@ export class QuestionController {
     }
   };
 
-  // Tüm soruları listeleme işlemi
+  // Tüm soruları getirme işlemi
   public getAllQuestions = async (
-    _req: Request,
+    req: Request,
     res: Response
   ): Promise<void> => {
     try {
-      // Soruları `order` alanına göre sıralayarak getiriyoruz (artan sırada)
-      const questions = await Question.find().sort({ order: 1 });
-      res.status(200).json(questions);
+      // Servis katmanından soruları alıyoruz
+      const questions = await this.questionService.getAllQuestions();
+      res.status(200).json(questions); // Doğrudan soruları döndürüyoruz
     } catch (error) {
-      console.error("Error fetching questions:", error);
+      console.error("Error getting questions:", error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });
@@ -101,7 +95,6 @@ export class QuestionController {
         res.status(404).json({ message: "Soru bulunamadı" });
         return;
       }
-
       // Successful response
       res
         .status(200)
@@ -113,7 +106,29 @@ export class QuestionController {
         .json({ message: "Soru güncellenirken bir hata oluştu", error });
     }
   };
+  // Belirli bir soruyu ID'ye göre getiren fonksiyon
+  public getQuestionById = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const questionId = req.params.id;
 
+      // Veritabanında soruyu bul
+      const question = await Question.findById(questionId);
+
+      if (!question) {
+        res.status(404).json({ message: "Question not found" });
+        return;
+      }
+
+      // Başarılı şekilde soruyu döndür
+      res.status(200).json(question);
+    } catch (error) {
+      console.error("Error fetching question:", error);
+      res.status(500).json({ message: "Error fetching question", error });
+    }
+  };
   // Soru silme işlemi
   public deleteQuestion = async (
     req: Request,
@@ -150,6 +165,7 @@ export class QuestionController {
       });
     }
   };
+
   public reorderQuestions = async (
     req: Request,
     res: Response
@@ -164,6 +180,30 @@ export class QuestionController {
     } catch (error) {
       console.error("Error reordering questions in controller:", error);
       res.status(500).json({ message: "Error reordering questions", error });
+    }
+  };
+  // Tüm tag'leri listele
+  public getAllTags = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const tags = await this.questionService.getAllTags();
+      res.status(200).json(tags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      res.status(500).json({ error: "Failed to fetch tags" });
+    }
+  };
+  // Belirli bir tag'e göre soruları listele
+  public getQuestionsByTag = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { tag } = req.params;
+      const questions = await this.questionService.getQuestionsByTag(tag);
+      res.status(200).json(questions); // Sadece 'questionText' ve 'duration' alanlarını döndürüyoruz
+    } catch (error) {
+      console.error("Error fetching questions by tag:", error);
+      res.status(500).json({ error: "Failed to fetch questions by tag" });
     }
   };
 }
