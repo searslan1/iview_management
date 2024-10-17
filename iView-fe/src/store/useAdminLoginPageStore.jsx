@@ -1,33 +1,29 @@
 import { create } from 'zustand';
+import axios from 'axios';
 
 const useAdminLoginPageStore = create((set) => ({
   username: '',
   password: '',
   setUsername: (username) => set(() => ({ username })),
   setPassword: (password) => set(() => ({ password })),
-  
-  // Login function with backend integration
+
+  // Login function with backend integration using axios
   login: async () => {
     const { username, password } = useAdminLoginPageStore.getState();
-    
+
     try {
       // Make a POST request to your backend API for login
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }), // Send username and password to the backend
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        username,
+        password,
       });
 
-      const data = await response.json(); // Parse the response
-
       // Check if login was successful based on backend response
-      if (response.ok && data.success) {
+      if (response.status === 200 && response.data.success) {
         alert('Login Successful');
-        // You can save authentication tokens here if needed, like data.token
+        // Save authentication tokens here if needed, like response.data.token
       } else {
-        alert(data.message || 'Login Failed'); // Display error message from backend
+        alert(response.data.message || 'Login Failed'); // Display error message from backend
       }
 
     } catch (error) {

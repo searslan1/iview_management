@@ -1,32 +1,83 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import axios from "axios";
+const usePackageStore = create((set) => ({
+  packages: [], // Paket isimlerini tutan state
+  questions: [], // Seçilen pakete ait soruları tutan state
+  // Tüm paket isimlerini (tag'leri) backend'den çekme
+  loadPackageNames: async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/questions/tags"
+      ); // Backend'den tag'leri çek
+      set({ packages: response.data });
+    } catch (error) {
+      console.error("Error loading packages:", error);
+    }
+  },
+  // Seçilen pakete (tag'e) göre soruları çekme
+  loadQuestionsByPackage: async (packageName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/questions/tag/${packageName}`
+      ); // Tag'e göre soruları çek
+      set({ questions: response.data });
+    } catch (error) {
+      console.error("Error loading questions:", error);
+    }
+  },
+  // Sorudan belirli bir tag'i silme
+  deleteTagFromQuestion: async (questionId, tagName) => {
+    try {
+      // Soru verisini backend'den al
+      const response = await axios.get(
+        `http://localhost:5000/api/questions/${questionId}`
+      );
+      const { questionText, duration, tags } = response.data;
 
-const usePackageStore = create((set, get) => ({
-    packages: [],
-    loadPackages: async () => {
-        // Paketleri yükleme işlevi (API'den veri çekme gibi)
-        // Örnek veri:
-        const fetchedPackages = [
-            { id: 1, name: 'Package 1' },
-            { id: 2, name: 'Package 2' },
-        ];
-        set({ packages: fetchedPackages });
-    },
-    addPackage: (newPackage) => {
+      // Silinecek tag'i çıkart
+      const updatedTags = tags.filter((tag) => tag !== tagName);
+
+      // Eğer tag'ler tamamen silindiyse soruyu tamamen kaldırmak için:
+      if (updatedTags.length === 0) {
+        // Soru tamamen silinmeli
+        await axios.delete(`http://localhost:5000/api/questions/delete/${questionId}`);
         set((state) => ({
-            packages: [...state.packages, newPackage],
+          questions: state.questions.filter((question) => question._id !== questionId),
         }));
-    },
-    deletePackage: (packageId) => {
+      } else {
+        // Backend'e güncellenmiş soruyu gönder
+        await axios.put(
+          `http://localhost:5000/api/questions/update/${questionId}`,
+          {
+            questionText,
+            duration,
+            tags: updatedTags, // only update if not empty
+          }
+        );
+
+        // Local state'de ilgili soruyu güncelle
         set((state) => ({
-            packages: state.packages.filter(pkg => pkg.id !== packageId),
+          questions: state.questions.map((question) =>
+            question._id === questionId
+              ? { ...question, tags: updatedTags }
+              : question
+          ),
         }));
-    },
-    reorderPackages: (fromIndex, toIndex) => {
-        const updatedPackages = [...get().packages];
-        const [movedPackage] = updatedPackages.splice(fromIndex, 1);
-        updatedPackages.splice(toIndex, 0, movedPackage);
-        set({ packages: updatedPackages });
-    },
+      }
+    } catch (error) {
+      console.error("Error deleting tag from question:", error);
+    }
+  },
+
+  // Soru sıralama fonksiyonu
+  reorderQuestions: async (reorderedQuestions) => {
+    try {
+      await axios.post(`http://localhost:5000/api/questions/reorder`, {
+        reorderedQuestions, // Yeni sıralamayı backend'e gönder
+      });
+    } catch (error) {
+      console.error("Error reordering questions:", error);
+    }
+  },
 }));
-
 export default usePackageStore;

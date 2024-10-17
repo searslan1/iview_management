@@ -1,66 +1,69 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const useQuestionListStore = create((set, get) => ({
-    questions: [],
-
-    // Soruları yerel olarak yükleme fonksiyonu (örnek veri ile başlatma)
-    loadQuestions: async () => {
-        // API'den veri çekme işlevi (simüle edilmiş örnek veri)
-        const fetchedQuestions = [
-            { id: '1', packageName: 'Package 1', question: 'What is your name?', time: 1 },
-            { id: '2', packageName: 'Package 1', question: 'What is your target?', time: 2 },
-            { id: '3', packageName: 'Package 2', question: 'What is your favorite color?', time: 2 },
-            { id: '4', packageName: 'Package 2', question: 'What is your idea?', time: 2 },
-        ];
-        set({ questions: fetchedQuestions });
-    },
-
-    // Soru ekleme fonksiyonu
-    addQuestion: (newQuestion) => {
-        set((state) => ({
-            questions: [...state.questions, { id: Date.now().toString(), ...newQuestion }], // Yerel ID ile yeni soruyu ekle
-        }));
-    },
-
-    // Soru düzenleme fonksiyonu
-    editQuestion: (updatedQuestion) => {
-        set((state) => ({
-            questions: state.questions.map((q) => (q.id === updatedQuestion.id ? { ...q, ...updatedQuestion } : q)),
-        }));
-    },
-
-    // Soru silme fonksiyonu
-    deleteQuestion: (id) => {
-        set((state) => ({
-            questions: state.questions.filter((q) => q.id !== id),
-        }));
-    },
-
-    // Paket adıyla soruları alma fonksiyonu
-    getQuestionsByPackage: (packageName) => {
-        return get().questions.filter(q => q.packageName === packageName);
-    },
-
-    // Paketten soru silme fonksiyonu
-    deleteQuestionFromPackage: (questionId) => {
-        set((state) => ({
-            questions: state.questions.filter(q => q.id !== questionId),
-        }));
-    },
-
-    // Soruları yeniden sıralama fonksiyonu
-    reorderQuestions: (activeId, overId) => {
-        set((state) => {
-            const activeIndex = state.questions.findIndex((q) => q.id === activeId);
-            const overIndex = state.questions.findIndex((q) => q.id === overId);
-
-            const newQuestions = [...state.questions];
-            const [movedItem] = newQuestions.splice(activeIndex, 1);
-            newQuestions.splice(overIndex, 0, movedItem);
-
-            return { questions: newQuestions };
-        });
-    },
+  questions: [],
+  // Soruları API'den yükleme fonksiyonu
+  loadQuestions: async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/questions/`);
+      set({ questions: response.data });
+    } catch (error) {
+      console.error("Error loading questions:", error);
+    }
+  },
+  // Soru ekleme fonksiyonu
+  addQuestion: async (newQuestionInput) => {
+    try {
+      const newQuestion = {
+        questionText: newQuestionInput.question,
+        duration: parseInt(newQuestionInput.time, 10),
+        tags: newQuestionInput.packageNames, // tags olarak packageName kullanıyoruz
+      };
+      const response = await axios.post(
+        `http://localhost:5000/api/questions/create`,
+        newQuestion
+      );
+      // Yeni eklenen soruyu state'e ekleyelim
+      set((state) => ({
+        questions: [...state.questions, response.data],
+      }));
+    } catch (error) {
+      console.error("Error adding question:", error);
+    }
+  },
+  // Soru düzenleme fonksiyonu
+  editQuestion: async (updatedQuestion) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/questions/update/${updatedQuestion._id}`,
+        updatedQuestion
+      );
+      set((state) => ({
+        questions: state.questions.map((q) =>
+          q._id === updatedQuestion._id ? { ...q, ...updatedQuestion } : q
+        ),
+      }));
+    } catch (error) {
+      console.error("Error editing question:", error);
+    }
+  },
+  // Soru silme fonksiyonu
+  deleteQuestion: async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/questions/delete/${id}`);
+      set((state) => ({
+        questions: state.questions.filter((q) => q._id !== id),
+      }));
+      console.log(`Question with id ${id} has been deleted.`);
+    } catch (error) {
+      console.error("Error deleting question:", error);
+    }
+  },
+  // Tetikleyici işlevi
+  triggerReload: () => {
+    set({ reloadFlag: !get().reloadFlag });
+  },
 }));
-
 export default useQuestionListStore;
