@@ -4,6 +4,7 @@ import { connectDB } from "./db/db";
 import commonRouter from "./common/router/auth.routes";
 import questionRouter from "./question_management/routes/question.routes";
 import registerRoutes from "./common/router/register.routes";
+import iviewRoutes from "./iview_management/routes/iview.routes";
 
 dotenv.config(); // .env dosyasını yükle
 
@@ -29,6 +30,7 @@ app.use(
 app.use("/api/register", registerRoutes); //admin kaydı için
 app.use("/api/auth", commonRouter); // Auth işlemleri için
 app.use("/api/questions", questionRouter); // Soru yönetimi için
+app.use("/api/iview", iviewRoutes);
 
 const PORT = process.env.PORT; // Eğer PORT yoksa varsayılan 5000
 app.listen(PORT, () => {
