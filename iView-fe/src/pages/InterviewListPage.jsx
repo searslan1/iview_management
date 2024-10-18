@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import InterviewCard from '../components/modals/InterviewCardModal';
 import CreateInterviewModal from '../components/modals/CreateInterviewModal';
-import QuestionModal from '../components/modals/InterviewQuestionsModal'; // Import QuestionModal
+import QuestionModal from '../components/modals/InterviewQuestionsModal'; 
+//import useCreateInterviewStore from '../store/useCreateInterviewStore';
 import Button from '../components/Button';
 import { CiCirclePlus } from "react-icons/ci";
 

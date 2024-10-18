@@ -1,49 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Button from '../Button';
 import InputField from '../InputField';
 import Dropdown from '../Dropdown';
 import DatePicker from '../DatePicker';
 import usePackageStore from '../../store/usePackageListStore';
+import useCreateInterviewStore from '../../store/useCreateInterviewStore';
 
 const CreateInterviewModal = ({ isOpen, onClose, onAddInterview }) => {
   const { packages, loadPackageNames } = usePackageStore(); // Fetch package list from the store
-  const [title, setTitle] = useState('');
-  const [packageName, setPackageName] = useState('');
-  const [expireDate, setExpireDate] = useState('');
-  const [canSkip, setCanSkip] = useState(false);
-  const [showAtOnce, setShowAtOnce] = useState(false);
+  const {
+    title, packageName, expireDate, canSkip, showAtOnce,
+    setTitle, setPackageName, setExpireDate, setCanSkip, setShowAtOnce, saveInterview, resetForm
+  } = useCreateInterviewStore(); // Manage form state with CreateInterviewStore
 
   // Load package names when modal is open
   useEffect(() => {
     if (isOpen) {
       loadPackageNames(); // Fetch package names from the store
-      console.log("aserty", packages); // Log packages to verify they are loaded correctly
     }
-  }, [isOpen, loadPackageNames, packages]);
+  }, [isOpen, loadPackageNames]);
 
   if (!isOpen) return null;
 
   const handleAdd = () => {
-    if (!title) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    const newInterview = {
-      title,
-      packageName,
-      expireDate,  // Include the expireDate
-      canSkip,
-      showAtOnce,
-      totalCandidates: 0,
-      onHoldCandidates: 0 // Initialize as 0 for now
-    };
-    onAddInterview(newInterview);
-    console.log(packageName) // Add the interview via parent
+    saveInterview(onAddInterview); // Use store action to save interview and call the parent callback
+    onClose(); // Close the modal
   };
 
-  const packageOptions = packages.map((pkg, index) => pkg);
-console.log("package options")
+  const packageOptions = packages.map((pkg) => pkg); // Map packages to dropdown options
 
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
