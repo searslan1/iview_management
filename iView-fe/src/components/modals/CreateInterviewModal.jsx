@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../Button';
 import InputField from '../InputField';
 import Dropdown from '../Dropdown';
@@ -6,16 +6,29 @@ import DatePicker from '../DatePicker';
 import usePackageStore from '../../store/usePackageListStore';
 
 const CreateInterviewModal = ({ isOpen, onClose, onAddInterview }) => {
-  const { packages } = usePackageStore(); // Fetch package list from the store
+  const { packages, loadPackageNames } = usePackageStore(); // Fetch package list from the store
   const [title, setTitle] = useState('');
   const [packageName, setPackageName] = useState('');
-  const [expireDate, setExpireDate] = useState(''); // Expire date
+  const [expireDate, setExpireDate] = useState('');
   const [canSkip, setCanSkip] = useState(false);
   const [showAtOnce, setShowAtOnce] = useState(false);
+
+  // Load package names when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      loadPackageNames(); // Fetch package names from the store
+      console.log("aserty", packages); // Log packages to verify they are loaded correctly
+    }
+  }, [isOpen, loadPackageNames, packages]);
 
   if (!isOpen) return null;
 
   const handleAdd = () => {
+    if (!title) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
     const newInterview = {
       title,
       packageName,
@@ -25,11 +38,12 @@ const CreateInterviewModal = ({ isOpen, onClose, onAddInterview }) => {
       totalCandidates: 0,
       onHoldCandidates: 0 // Initialize as 0 for now
     };
-    onAddInterview(newInterview); // Add the interview via parent
+    onAddInterview(newInterview);
+    console.log(packageName) // Add the interview via parent
   };
 
-  // Extract package names from the packages array for dropdown options
-  const packageOptions = packages.map(pkg => pkg.name);
+  const packageOptions = packages.map((pkg, index) => pkg);
+console.log("package options")
 
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">

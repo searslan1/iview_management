@@ -1,68 +1,65 @@
-import React from 'react';
-import  { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import React, { useState } from 'react';
 import InterviewCard from '../components/modals/InterviewCardModal';
-import CreateInterviewModal from '../components/modals/CreateInterviewModal'; // Import the modal
+import CreateInterviewModal from '../components/modals/CreateInterviewModal';
+import QuestionModal from '../components/modals/InterviewQuestionsModal'; // Import QuestionModal
 import Button from '../components/Button';
 import { CiCirclePlus } from "react-icons/ci";
 
 const InterviewList = () => {
-  const navigate = useNavigate(); // Initialize navigation
-
-  // State to manage interview list
-  const [interviews, setInterviews] = useState([
-    { title: 'Backend Interview', totalCandidates: 6, onHoldCandidates: 3, expireDate: '2023-12-01' },
-    { title: 'Frontend Interview', totalCandidates: 8, onHoldCandidates: 2, expireDate: '2023-11-15' },
-  ]);
-
-  // State to manage modal visibility
+  const [interviews, setInterviews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState('');
 
-  // Function to handle adding a new interview
   const handleAddInterview = (newInterview) => {
-    setInterviews((prevInterviews) => [...prevInterviews, newInterview]);
-    setIsModalOpen(false); // Close modal after adding
+    setInterviews([...interviews, newInterview]);
+    setIsModalOpen(false);
   };
 
-  // Function to navigate to Video View Page
-  
+  const openQuestionModal = (packageName) => {
+    setSelectedPackage(packageName);
+    setIsQuestionModalOpen(true);
+  };
 
   return (
     <div className="relative flex flex-col">
-      {/* Header with title and add button */}
       <div className="flex justify-between items-center w-full mb-5">
         <h1 className="text-2xl font-bold">Interview List</h1>
-
-        {/* Plus button */}
-        <Button 
-          onClick={() => setIsModalOpen(true)} // Open modal on click
+        <Button
+          onClick={() => setIsModalOpen(true)}
           className="text-[#47A7A2] hover:text-red-700 text-l px-4 py-2 rounded-full"
           label={<CiCirclePlus size={40} />}
         />
-
-        {/* Video button */}
-       
       </div>
 
-      {/* Interview cards list */}
       <div className="flex flex-wrap">
         {interviews.map((interview, index) => (
           <InterviewCard
             key={index}
-            title={interview.title} 
+            title={interview.title}
             totalCandidates={interview.totalCandidates}
             onHoldCandidates={interview.onHoldCandidates}
-            expireDate={interview.expireDate} // Pass expireDate here
+            expireDate={interview.expireDate}
+            onQuestionClick={() => openQuestionModal(interview.packageName)} // Trigger modal
           />
         ))}
       </div>
 
       {/* Create Interview Modal */}
       {isModalOpen && (
-        <CreateInterviewModal 
+        <CreateInterviewModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)} // Close modal
-          onAddInterview={handleAddInterview} // Add new interview
+          onClose={() => setIsModalOpen(false)}
+          onAddInterview={handleAddInterview}
+        />
+      )}
+
+      {/* Question Modal */}
+      {isQuestionModalOpen && (
+        <QuestionModal
+          isOpen={isQuestionModalOpen}
+          onClose={() => setIsQuestionModalOpen(false)}
+          packageName={selectedPackage}
         />
       )}
     </div>
