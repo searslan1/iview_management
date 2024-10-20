@@ -11,7 +11,7 @@ const router = Router();
 router.post("/create", interviewController.createInterview);
 router.get("/interviews", interviewController.getAllInterviews);
 router.get("/interviews/:id", interviewController.getInterviewById);
-router.put("/interviews/:id", interviewController.updateInterview);
+/* router.put("/interviews/:id", interviewController.updateInterview); */
 router.delete("/interviews/:id", interviewController.deleteInterview);
 
 // Candidate routes

@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import InterviewService from "../service/iview.service";
 import { CreateInterviewDTO } from "../dto/iview.dto";
-import { IQuestionDTO } from "../../question_management/dto/question.dto";
+import { v4 as uuidv4 } from 'uuid';
+import { Question } from "../../question_management/entity/question";
+
+
 export class InterviewController {
   private interviewService: InterviewService;
 
@@ -14,28 +17,30 @@ export class InterviewController {
     res: Response
   ): Promise<void> => {
     try {
-      const { title, packageName, expireDate } = req.body; // packageName frontend'den tags olarak geliyor
-
+      const { title, packageName, expireDate } = req.body; // frontend'den gelen veriler
+  
+      // packageName (tags) ile soruları buluyoruz
+      const questions = await Question.find({ tags: packageName });
+  
+      // Soruların ID'lerini string olarak map'liyoruz
+      const questionIds = questions.map((q) => String(q._id)); // _id'leri string olarak alıyoruz
+  
       // Interview DTO'yu oluşturuyoruz
       const interviewDTO = new CreateInterviewDTO({
         title,
-        date: expireDate,
-        interviewLink: "some_generated_link",
-        uuid: "some_generated_uuid",
-        candidates: [], // Boş bir aday listesi
+        date: expireDate, // Tarihi doğrudan expireDate olarak alıyoruz
+        questions: questionIds, // Soruların ID'leri
       });
-
-      // DTO'yu tags eklemeden işliyoruz
+  
+      // Yeni mülakat nesnesini oluşturuyoruz ve link'i ekliyoruz
       const newInterview = {
         ...interviewDTO,
-        tags: packageName, // packageName'i tags olarak ekliyoruz
+        link: null, // veya "default_link" gibi varsayılan bir değer atanabilir
       };
-
+  
       // Servis katmanında yeni interview'u kaydediyoruz
-      const createdInterview = await this.interviewService.createInterview(
-        newInterview
-      );
-
+      const createdInterview = await this.interviewService.createInterview(newInterview);
+  
       res.status(201).json(createdInterview);
     } catch (error) {
       res.status(400).json({
@@ -43,6 +48,9 @@ export class InterviewController {
       });
     }
   };
+  
+  
+  
 
   public getAllInterviews = async (
     req: Request,
@@ -78,7 +86,7 @@ export class InterviewController {
     }
   };
 
-  public updateInterview = async (
+  /* public updateInterview = async (
     req: Request,
     res: Response
   ): Promise<void> => {
@@ -98,7 +106,7 @@ export class InterviewController {
       });
     }
   };
-
+*/
   public deleteInterview = async (
     req: Request,
     res: Response

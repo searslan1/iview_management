@@ -8,6 +8,7 @@ export const CandidateSchema = new mongoose.Schema({
   kvkkApproval: { type: Boolean, required: true },
   videoUrl: { type: String },
   status: { type: String, default: "pending" }, // initial status is pending
+  interview: { type: mongoose.Schema.Types.ObjectId, ref: "Interview" }  // Adayın hangi mülakata katıldığı
 });
 
 export const Candidate = mongoose.model("Candidate", CandidateSchema);
