@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaLink, FaTrash, FaQuestionCircle } from "react-icons/fa";
+import QuestionModal from '../modals/InterviewQuestionsModal'; 
+
 
 const isExpired = (expireDate) => {
   const currentDate = new Date();
@@ -7,13 +9,22 @@ const isExpired = (expireDate) => {
   return interviewExpireDate < currentDate;
 };
 
-const InterviewCard = ({ title, totalCandidates, onHoldCandidates, expireDate, onQuestionClick }) => {
+const InterviewCard = ({ title, totalCandidates, onHoldCandidates, expireDate, packageName }) => {
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false); // State for Question Modal
   const publishedStatus = isExpired(expireDate) ? 'Not Live' : 'Live';
+
+  const openQuestionModal = () => {
+    setIsQuestionModalOpen(true);
+  };
+
+  const closeQuestionModal = () => {
+    setIsQuestionModalOpen(false);
+  };
 
   return (
     <div className="relative bg-white py-8 px-6 rounded-3xl w-[30%] my-4 shadow-xl mr-6">
       <div className="absolute right-4 top-4">
-        <button className="text-gray-400 mr-4" onClick={onQuestionClick}>
+        <button className="text-gray-400 mr-4" onClick={openQuestionModal}>
           <FaQuestionCircle size={18} />
         </button>
         <button className="text-gray-400">
@@ -49,6 +60,15 @@ const InterviewCard = ({ title, totalCandidates, onHoldCandidates, expireDate, o
           </div>
         </div>
       </div>
+
+      {/* Question Modal */}
+      {isQuestionModalOpen && (
+        <QuestionModal
+          isOpen={isQuestionModalOpen}
+          onClose={closeQuestionModal}
+          packageName={packageName} // Pass the package name to load questions
+        />
+      )}
     </div>
   );
 };

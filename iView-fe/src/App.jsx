@@ -7,9 +7,8 @@ import ManageQuestionList from './pages/ManageQuestionPackagePage';
 import QuestionListPage from './pages/QuestionListPage';
 import PackageListPage from './pages/PackageListPage';
 import InterviewList from './pages/InterviewListPage';
-import VideoViewPage from './pages/VideoViewPage'; 
 
-import PersonalInfoForm from './pages/VideoYedekPage';
+
 
 function App() {
   return (
@@ -35,9 +34,7 @@ function App() {
           </Route>
 
 
-          <Route path="video-view" element={<VideoViewPage/>}>
-          <Route path="video-record" element={<VideoViewPage />} />
-          </Route>
+        
 
         </Route>
       </Routes>

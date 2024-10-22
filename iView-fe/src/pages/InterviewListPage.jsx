@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import InterviewCard from '../components/modals/InterviewCardModal';
 import CreateInterviewModal from '../components/modals/CreateInterviewModal';
-import QuestionModal from '../components/modals/InterviewQuestionsModal'; 
-//import useCreateInterviewStore from '../store/useCreateInterviewStore';
 import Button from '../components/Button';
-import { CiCirclePlus } from "react-icons/ci";
+import { FaUsersViewfinder } from "react-icons/fa6";
+import usePackageStore from '../store/usePackageListStore';
+import useInterviewStore from '../store/useInterviewListStore'; 
 
 const InterviewList = () => {
-  const [interviews, setInterviews] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState('');
 
-  const handleAddInterview = (newInterview) => {
-    setInterviews([...interviews, newInterview]);
+  // Package store
+  const { packages, loadPackageNames } = usePackageStore();
+
+  // Interview store
+  const { interviews, loadInterviews, addInterview } = useInterviewStore();
+
+  // Manage interview form state
+  const [title, setTitle] = useState('');
+  const [packageName, setPackageName] = useState('');
+  const [expireDate, setExpireDate] = useState('');
+  const [canSkip, setCanSkip] = useState(false);
+  const [showAtOnce, setShowAtOnce] = useState(false);
+
+  useEffect(() => {
+    loadPackageNames();
+    loadInterviews();
+  }, [loadPackageNames, loadInterviews]);
+
+  const handleAddInterview = async () => {
+    if (!title || !packageName || !expireDate) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    const newInterview = { title, packageName, expireDate, canSkip, showAtOnce };
+    await addInterview(newInterview);
+    resetForm();
     setIsModalOpen(false);
   };
 
-  const openQuestionModal = (packageName) => {
-    setSelectedPackage(packageName);
-    setIsQuestionModalOpen(true);
+  const resetForm = () => {
+    setTitle('');
+    setPackageName('');
+    setExpireDate('');
+    setCanSkip(false);
+    setShowAtOnce(false);
   };
 
   return (
@@ -29,7 +53,7 @@ const InterviewList = () => {
         <Button
           onClick={() => setIsModalOpen(true)}
           className="text-[#47A7A2] hover:text-red-700 text-l px-4 py-2 rounded-full"
-          label={<CiCirclePlus size={40} />}
+          label={<FaUsersViewfinder size={40} />}
         />
       </div>
 
@@ -41,26 +65,26 @@ const InterviewList = () => {
             totalCandidates={interview.totalCandidates}
             onHoldCandidates={interview.onHoldCandidates}
             expireDate={interview.expireDate}
-            onQuestionClick={() => openQuestionModal(interview.packageName)} // Trigger modal
           />
         ))}
       </div>
 
-      {/* Create Interview Modal */}
       {isModalOpen && (
         <CreateInterviewModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onAddInterview={handleAddInterview}
-        />
-      )}
-
-      {/* Question Modal */}
-      {isQuestionModalOpen && (
-        <QuestionModal
-          isOpen={isQuestionModalOpen}
-          onClose={() => setIsQuestionModalOpen(false)}
-          packageName={selectedPackage}
+          title={title}
+          packageName={packageName}
+          expireDate={expireDate}
+          canSkip={canSkip}
+          showAtOnce={showAtOnce}
+          setTitle={setTitle}
+          setPackageName={setPackageName}
+          setExpireDate={setExpireDate}
+          setCanSkip={setCanSkip}
+          setShowAtOnce={setShowAtOnce}
+          packages={packages}
         />
       )}
     </div>

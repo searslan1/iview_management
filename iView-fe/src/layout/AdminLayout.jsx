@@ -1,6 +1,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom'; 
 import { Link } from 'react-router-dom';
+import { GrDocumentVideo } from "react-icons/gr";
+import { LuPackageSearch } from "react-icons/lu";
 
 const MainSidebar = () => {
   return (
@@ -10,21 +12,20 @@ const MainSidebar = () => {
       </div>
       <ul>
         <li className="mb-4">
-          <Link to="/admin-page/manage-questions-package" className="text-gray-700 font-semibold hover:text-[#47A7A2]">
+          <Link to="/admin-page/manage-questions-package" className="text-gray-700 font-semibold hover:text-[#47A7A2] flex items-center">
+          <LuPackageSearch className="mr-2 size-5" />
             Manage Question Package
           </Link>
         </li>
 
         <li>
-          <Link to="/admin-page/interview-list" className="text-gray-700 font-semibold hover:text-[#47A7A2]">
+      
+          <Link to="/admin-page/interview-list" className="text-gray-700 font-semibold hover:text-[#47A7A2] flex items-center" >
+          <GrDocumentVideo className="mr-2" />
             Interview List
           </Link>
         </li>
-        <li>
-          <Link to="/admin-page/video-view" className="text-gray-700 font-semibold hover:text-[#47A7A2]">
-           Video View
-          </Link>
-        </li>
+       
       </ul>
     </div>
   );
