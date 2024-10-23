@@ -8,7 +8,9 @@ class InterviewRepository {
     const interview = new Interview(interviewData);
     return await interview.save();
 }
-
+async getAllInterviews() {
+  return await Interview.find(); // Tüm mülakatları veritabanından çeker
+}
   async findByLink(link: string) {
     return await Interview.findOne({ link });
   }

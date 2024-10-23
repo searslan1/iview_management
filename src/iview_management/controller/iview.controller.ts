@@ -66,7 +66,9 @@ export class InterviewController {
     res: Response
   ): Promise<void> => {
     try {
-      const interviews = await this.interviewService.getAllInterviews();
+      // Interview modelini populate ile sorularla birlikte getiriyoruz
+      const interviews = await Interview.find().populate('questions', 'questionText duration');
+  
       res.status(200).json(interviews);
     } catch (error) {
       res.status(500).json({
@@ -74,6 +76,7 @@ export class InterviewController {
       });
     }
   };
+  
 
 
   public getInterviewByLink = async (

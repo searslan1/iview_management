@@ -4,10 +4,12 @@ import { CreateInterviewDTO } from "../dto/iview.dto";
 const interviewRepository = new InterviewRepository();
 
 class InterviewService {
-  getAllInterviews: any;
   interviewRepository: any;
   async createInterview(interviewData: CreateInterviewDTO) {
     return await interviewRepository.create(interviewData);
+  }
+  async getAllInterviews() {
+    return await interviewRepository.getAllInterviews(); // repository'deki fonksiyon çağrılır
   }
 
   async getInterviewByLink(link: string) {
