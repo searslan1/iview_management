@@ -10,10 +10,10 @@ const router = Router();
 // Interview routes
 router.post("/create", interviewController.createInterview);
 router.get("/interviews", interviewController.getAllInterviews);
-router.get("/interviews/:id", interviewController.getInterviewById); // Interview'ı ID'ye göre getir
+router.get("/:id", interviewController.getInterviewById); // Interview'ı ID'ye göre getir
 router.get("/link/:link", interviewController.getInterviewByLink);
 /* router.put("/interviews/:id", interviewController.updateInterview); */
-router.delete("/interviews/:id", interviewController.deleteInterview);
+router.delete("/delete/:id", interviewController.deleteInterview);
 
 // Candidate routes
 router.post("/candidates", candidateController.createCandidate);

@@ -3,6 +3,12 @@ import CandidateService from "../service/candidate.service";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
 
 export class CandidateController {
+  static createCandidate(arg0: string, createCandidate: any) {
+      throw new Error("Method not implemented.");
+  }
+  static getCandidateById(arg0: string, getCandidateById: any) {
+      throw new Error("Method not implemented.");
+  }
   private candidateService: CandidateService;
 
   constructor() {

@@ -47,7 +47,7 @@ export class InterviewController {
       // Yeni mülakat nesnesini oluşturuyoruz ve link'i ekliyoruz
       const newInterview = {
         ...interviewDTO,
-        link: `http://localhost:5174/interview/${interviewLink}`, // Link oluşturuluyor
+        link: interviewLink, // Link oluşturuluyor
       };
   
       // Servis katmanında yeni interview'u kaydediyoruz
@@ -84,7 +84,7 @@ export class InterviewController {
     res: Response
   ): Promise<void> => {
     try {
-      const interview = await this.interviewService.getInterviewByLink(req.params.link);
+      const interview = await this.interviewService.getInterviewByLink(req.params.interviewId);
       
       if (!interview) {
         res.status(404).json({ message: "Interview not found" });
