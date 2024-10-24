@@ -61,6 +61,7 @@ const InterviewList = () => {
         {interviews.map((interview, index) => (
           <InterviewCard
             key={index}
+            id={interview._id} 
             title={interview.title}
             totalCandidates={interview.totalCandidates}
             onHoldCandidates={interview.onHoldCandidates}

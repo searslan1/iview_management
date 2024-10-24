@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaLink, FaTrash, FaQuestionCircle } from "react-icons/fa";
 import QuestionModal from '../modals/InterviewQuestionsModal'; 
-
+import useInterviewStore from '../../store/useInterviewListStore';
 
 const isExpired = (expireDate) => {
   const currentDate = new Date();
@@ -9,16 +9,47 @@ const isExpired = (expireDate) => {
   return interviewExpireDate < currentDate;
 };
 
-const InterviewCard = ({ title, totalCandidates, onHoldCandidates, expireDate, packageName }) => {
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false); // State for Question Modal
+const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDate, packageName }) => {
+  console.log(id);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [accessError, setAccessError] = useState(false);
+  const { deleteInterview, loadInterview_Id, interview } = useInterviewStore();
   const publishedStatus = isExpired(expireDate) ? 'Not Live' : 'Live';
 
-  const openQuestionModal = () => {
-    setIsQuestionModalOpen(true);
+
+  useEffect(() => {
+    if (id) {
+      loadInterview_Id(id);
+    }
+  }, [id, loadInterview_Id]);
+
+  const openQuestionModal = () => setIsQuestionModalOpen(true);
+  const closeQuestionModal = () => setIsQuestionModalOpen(false);
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this interview?')) {
+      await deleteInterview(id);
+      console.log('Interviewid:',id)
+
+    }
   };
 
-  const closeQuestionModal = () => {
-    setIsQuestionModalOpen(false);
+  const handleCopyLink = () => {
+    if (isExpired(expireDate)) {
+      setAccessError(true);
+      alert("Interview has expired, link cannot be copied.");
+    } else {
+      // Check if interview ID is available
+      const interviewId = interview?._id || id; // fallback to prop id if interview is not yet loaded
+      const interviewLink = `http://localhost:5174/information-form/${interviewId}`;
+      navigator.clipboard.writeText(interviewLink)
+        .then(() => {
+          alert("Link copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy: ", err);
+        });
+    }
   };
 
   return (
@@ -27,12 +58,14 @@ const InterviewCard = ({ title, totalCandidates, onHoldCandidates, expireDate, p
         <button className="text-gray-400 mr-4" onClick={openQuestionModal}>
           <FaQuestionCircle size={18} />
         </button>
-        <button className="text-gray-400">
+        <button className="text-gray-400" onClick={handleDelete}>
           <FaTrash size={16} />
         </button>
       </div>
       <div className="text-white flex items-center absolute rounded-full py-2 px-2 shadow-xl bg-[#47A7A2] left-6 -top-4">
-        <FaLink />
+        <button onClick={handleCopyLink} className="flex items-center">
+          <FaLink />
+        </button>
       </div>
       <div className="mt-8">
         <p className="text-xl font-semibold my-2">{title}</p>

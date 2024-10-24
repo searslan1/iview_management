@@ -36,7 +36,7 @@ const QuestionModal = ({ isOpen, onClose, packageName }) => {
                 className="flex justify-between items-center p-4 mb-2 bg-gray-100 rounded-lg shadow-sm"
               >
                 <span className="font-semibold">{question.questionText}</span>
-                <span className="text-sm text-gray-600">2 min</span>
+                <span className="text-sm text-gray-600"></span>
               </li>
             ))
           ) : (
