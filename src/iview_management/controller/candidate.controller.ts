@@ -20,10 +20,18 @@ export class CandidateController {
     res: Response
   ): Promise<void> => {
     try {
+      const { videoUrl } = req.body;
+  
+      // Eğer video kaydedilmemişse veritabanına kaydetme
+      if (!videoUrl) {
+        res.status(400).json({ message: "Video kaydedilmediği için kayıt yapılamaz." });
+        return;
+      }
+  
+      // Video varsa, aday bilgilerini kaydediyoruz
       const candidateDTO = new CreateCandidateDTO(req.body);
-      const newCandidate = await this.candidateService.createCandidate(
-        candidateDTO
-      );
+      const newCandidate = await this.candidateService.createCandidate(candidateDTO);
+  
       res.status(201).json(newCandidate);
     } catch (error) {
       res.status(400).json({
@@ -31,6 +39,7 @@ export class CandidateController {
       });
     }
   };
+  
 
   public getCandidateById = async (
     req: Request,

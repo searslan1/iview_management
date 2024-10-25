@@ -1,5 +1,6 @@
 import CandidateRepository from "../repository/candidate.repository";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
+import { Candidate } from "../models/candidate.schema";
 
 const candidateRepository = new CandidateRepository();
 
@@ -21,7 +22,7 @@ class CandidateService {
   }
 
   async getCandidatesByInterviewId(interviewId: string) {
-    return await candidateRepository.findByInterviewId(interviewId);
+    return await Candidate.find({ interview: interviewId }).populate('interview'); // Interview ile ilişkili adayları getir
   }
 }
 

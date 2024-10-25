@@ -84,20 +84,31 @@ export class InterviewController {
     res: Response
   ): Promise<void> => {
     try {
-      const interview = await this.interviewService.getInterviewByLink(req.params.interviewId);
-      
+      const { interviewId } = req.params;  // UUID'yi URL'den alıyoruz
+      console.log("Received interviewId:", interviewId);
+
+      // UUID ile mülakatı buluyoruz ve questions alanını populate ile dolduruyoruz
+      const interview = await Interview.findOne({ link: `http://localhost:5174/interview/${interviewId}` })
+        .populate('questions', 'questionText duration');
+
       if (!interview) {
+        console.log("Interview not found");
         res.status(404).json({ message: "Interview not found" });
         return;
       }
-  
+
+      console.log("Found Interview:", interview);
       res.status(200).json(interview);
     } catch (error) {
+      console.log("Error fetching interview:", error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
+
+  
+  
   
   public getInterviewById = async (req: Request, res: Response): Promise<void> => {
     try {
