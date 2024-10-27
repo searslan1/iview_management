@@ -36,9 +36,16 @@ const useCreateInterviewStore = create((set) => ({
         canSkip: false,
         showAtOnce: false,
       }); // Reset form after successful save
+      // Oluşturulan mülakatın UUID'sini al
+      // Oluşturulan mülakatın UUID'sini al
+      const { link } = response.data; // response kullanarak yanıtı al
+      // UUID link olarak dönmelidir
+
+      // Mülakatı UUID ile çek
+      const interviewId = link; // link olarak aldığınız UUID
+      await fetchInterview(interviewId);
     } catch (error) {
-      console.error('Error saving interview:', error);
-      alert('Failed to save the interview. Please try again.');
+      console.error('Error creating or fetching interview:', error);
     }
   },
   resetForm: () =>

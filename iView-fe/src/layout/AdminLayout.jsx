@@ -8,7 +8,7 @@ const MainSidebar = () => {
   return (
     <div className="bg-white w-1/4 sm:w-64 h-screen p-4 border-r">
       <div className="text-3xl font-bold mb-10" style={{ color: '#47A7A2' }}>
-        I-VIEW
+      <img src="https://remotetech.work/assets/img/logo/logo.svg" alt="Logo" className="w-2/3" />
       </div>
       <ul>
         <li className="mb-4">

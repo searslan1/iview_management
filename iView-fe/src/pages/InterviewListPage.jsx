@@ -4,10 +4,11 @@ import CreateInterviewModal from '../components/modals/CreateInterviewModal';
 import Button from '../components/Button';
 import { FaUsersViewfinder } from "react-icons/fa6";
 import usePackageStore from '../store/usePackageListStore';
-import useInterviewStore from '../store/useInterviewListStore'; 
+import useInterviewStore from '../store/useInterviewListStore';
 
 const InterviewList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Package store
   const { packages, loadPackageNames } = usePackageStore();
@@ -23,8 +24,12 @@ const InterviewList = () => {
   const [showAtOnce, setShowAtOnce] = useState(false);
 
   useEffect(() => {
-    loadPackageNames();
-    loadInterviews();
+    const fetchData = async () => {
+      await loadPackageNames();
+      await loadInterviews();
+      setLoading(false); // Set loading to false after fetching
+    };
+    fetchData();
   }, [loadPackageNames, loadInterviews]);
 
   const handleAddInterview = async () => {
@@ -46,6 +51,10 @@ const InterviewList = () => {
     setShowAtOnce(false);
   };
 
+  if (loading) {
+    return <div>Loading interviews...</div>; // Loading state
+  }
+
   return (
     <div className="relative flex flex-col">
       <div className="flex justify-between items-center w-full mb-5">
@@ -58,10 +67,10 @@ const InterviewList = () => {
       </div>
 
       <div className="flex flex-wrap">
-        {interviews.map((interview, index) => (
+        {interviews.map((interview) => (
           <InterviewCard
-            key={index}
-            id={interview._id} 
+            key={interview._id} // Use unique ID instead of index
+            id={interview._id}
             title={interview.title}
             totalCandidates={interview.totalCandidates}
             onHoldCandidates={interview.onHoldCandidates}
@@ -73,7 +82,10 @@ const InterviewList = () => {
       {isModalOpen && (
         <CreateInterviewModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            resetForm(); // Reset form on close
+          }}
           onAddInterview={handleAddInterview}
           title={title}
           packageName={packageName}

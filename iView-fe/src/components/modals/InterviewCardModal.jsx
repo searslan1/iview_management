@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaLink, FaTrash, FaQuestionCircle } from "react-icons/fa";
-import QuestionModal from '../modals/InterviewQuestionsModal'; 
+import QuestionModal from '../modals/InterviewQuestionsModal';
 import useInterviewStore from '../../store/useInterviewListStore';
 
 const isExpired = (expireDate) => {
@@ -10,14 +10,12 @@ const isExpired = (expireDate) => {
 };
 
 const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDate, packageName }) => {
-  console.log(id);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-  const [accessError, setAccessError] = useState(false);
-  const { deleteInterview, loadInterview_Id, interview } = useInterviewStore();
+  const { loadInterview_Id,  isLoading, error } = useInterviewStore();
   const publishedStatus = isExpired(expireDate) ? 'Not Live' : 'Live';
 
 
-  useEffect(() => {
+  useEffect(() => { 
     if (id) {
       loadInterview_Id(id);
     }
@@ -29,28 +27,31 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDat
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this interview?')) {
       await deleteInterview(id);
-      console.log('Interviewid:',id)
+      console.log('Interviewid:', id)
 
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (isExpired(expireDate)) {
       setAccessError(true);
       alert("Interview has expired, link cannot be copied.");
-    } else {
-      // Check if interview ID is available
-      const interviewId = interview?._id || id; // fallback to prop id if interview is not yet loaded
-      const interviewLink = `http://localhost:5174/information-form/${interviewId}`;
-      navigator.clipboard.writeText(interviewLink)
-        .then(() => {
-          alert("Link copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Failed to copy: ", err);
-        });
+      return;
+    }
+
+   
+   
+    // Eğer ID mevcutsa, linki kopyala
+    const interviewLink = `http://localhost:5174/information-form/${id}`;
+    try {
+      await navigator.clipboard.writeText(interviewLink);
+      alert("Link copied to clipboard!");
+    } catch (error) {
+      console.error("Failed to copy: ", error);
     }
   };
+
+
 
   return (
     <div className="relative bg-white py-8 px-6 rounded-3xl w-[30%] my-4 shadow-xl mr-6">

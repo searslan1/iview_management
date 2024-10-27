@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 const useInterviewStore = create((set) => ({
-    interviews: [],
-
+    interview: null,
+    isLoading: false,
+    error: null,
     // Fetch all interviews from the server
     loadInterviews: async () => {
         try {
@@ -25,23 +26,32 @@ const useInterviewStore = create((set) => ({
             console.error('Error adding interview:', error);
         }
     },
-    loadInterview_Id: async (interviewId) => 
-        { set({ isLoading: true });
-     try { const response = await axios.get(`http://localhost:5000/api/iview/link/${interviewId}`); 
-     set({ interview: response.data, questions: response.data.questions, isLoading: false }); 
-    } catch (error) { console.error('Error loading interview:', error); set({ isLoading: false }); } },
-    // Delete an interview by ID
-    deleteInterview: async (interviewId) => {
+
+    loadInterview_Id: async (interviewId) => {
+        set({ isLoading: true, error: null });
         try {
-          await axios.delete(`http://localhost:5000/api/iview/delete/${interviewId}`);
-          set((state) => ({
-            interviews: state.interviews.filter((interview) => interview._id !== interviewId),
-          }));
+          const response = await axios.get(`http://localhost:5000/api/interview/link/${interviewId}`);
+          set({ interview: response.data, isLoading: false });
         } catch (error) {
-          console.error('Error deleting interview:', error);
+          console.error('Error loading interview:', error);
+          set({ isLoading: false, error: error.response?.data?.error || 'Unknown error' });
         }
       },
-      
+
+
+
+
+    deleteInterview: async (interviewId) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/iview/delete/${interviewId}`);
+            set((state) => ({
+                interviews: state.interviews.filter((interview) => interview._id !== interviewId),
+            }));
+        } catch (error) {
+            console.error('Error deleting interview:', error);
+        }
+    },
+
 }));
 
 export default useInterviewStore;
