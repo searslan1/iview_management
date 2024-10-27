@@ -3,12 +3,7 @@ import CandidateService from "../service/candidate.service";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
 
 export class CandidateController {
-  static createCandidate(arg0: string, createCandidate: any) {
-      throw new Error("Method not implemented.");
-  }
-  static getCandidateById(arg0: string, getCandidateById: any) {
-      throw new Error("Method not implemented.");
-  }
+  
   private candidateService: CandidateService;
 
   constructor() {
@@ -20,25 +15,21 @@ export class CandidateController {
     res: Response
   ): Promise<void> => {
     try {
-      const { videoUrl } = req.body;
-  
-      // Eğer video kaydedilmemişse veritabanına kaydetme
-      if (!videoUrl) {
-        res.status(400).json({ message: "Video kaydedilmediği için kayıt yapılamaz." });
-        return;
-      }
-  
-      // Video varsa, aday bilgilerini kaydediyoruz
       const candidateDTO = new CreateCandidateDTO(req.body);
+      
+      // Adayı kaydediyoruz
       const newCandidate = await this.candidateService.createCandidate(candidateDTO);
   
-      res.status(201).json(newCandidate);
+      // Mongoose dokümanını toObject ile normal JavaScript objesine çeviriyoruz
+      res.status(201).json({ candidateId: newCandidate._id, ...newCandidate.toObject() });
     } catch (error) {
       res.status(400).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
+  
+  
   
 
   public getCandidateById = async (

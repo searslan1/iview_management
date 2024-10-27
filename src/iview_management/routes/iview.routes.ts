@@ -3,7 +3,7 @@ import { InterviewController } from "../controller/iview.controller";
 import { CandidateController } from "../controller/candidate.controller";
 
 const interviewController = new InterviewController();
-const candidateController = new CandidateController();
+
 
 const router = Router();
 
