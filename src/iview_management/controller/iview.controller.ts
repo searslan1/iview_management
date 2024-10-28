@@ -4,7 +4,7 @@ import { CreateInterviewDTO } from "../dto/iview.dto";
 import { v4 as uuidv4 } from 'uuid';
 import { IQuestion, Question } from "../../question_management/entity/question";
 import { Interview } from "../models/iview.schema";
-import { getDefaultHighWaterMark } from "stream";
+
 
 export class InterviewController {
   private interviewService: InterviewService;
