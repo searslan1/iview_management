@@ -4,28 +4,39 @@ import { CreateInterviewDTO } from "../dto/iview.dto";
 const interviewRepository = new InterviewRepository();
 
 class InterviewService {
-  interviewRepository: any;
-  async createInterview(interviewData: CreateInterviewDTO) {
-    return await interviewRepository.create(interviewData);
+  interviewRepository: InterviewRepository;
+
+  constructor() {
+    this.interviewRepository = new InterviewRepository(); // InterviewRepository'yi burada doğru şekilde tanımlıyoruz
   }
+
+  async createInterview(interviewData: CreateInterviewDTO) {
+    return await this.interviewRepository.create(interviewData);
+  }
+
   async getAllInterviews() {
-    return await interviewRepository.getAllInterviews(); // repository'deki fonksiyon çağrılır
+    return await this.interviewRepository.getAllInterviews();
   }
 
   async getInterviewByLink(link: string) {
-    return await interviewRepository.findByLink(link);
+    return await this.interviewRepository.findByLink(link);
   }
-  
+
+  async getInterviewByUUID(uuid: string) {
+    console.log("Service layer UUID:", uuid);
+    return await this.interviewRepository.findByUUID(uuid);
+  }
+
   async getInterviewById(id: string) {
-    return await this.interviewRepository.getInterviewById(id);
+    return await this.interviewRepository.getInterviewById(id); // interviewRepository'yi this üzerinden çağırıyoruz
   }
- 
+
   async updateInterview(id: string, updateData: any) {
-    return await interviewRepository.update(id, updateData);
+    return await this.interviewRepository.update(id, updateData);
   }
 
   async deleteInterview(id: string) {
-    return await interviewRepository.delete(id);
+    return await this.interviewRepository.delete(id);
   }
 }
 

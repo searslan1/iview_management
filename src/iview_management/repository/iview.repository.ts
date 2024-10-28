@@ -14,7 +14,13 @@ async getAllInterviews() {
   async findByLink(link: string) {
     return await Interview.findOne({ link });
   }
-
+  async findByUUID(uuid: string) {
+    console.log("Repository layer UUID:", uuid);
+    // UUID'nin link içinde yer aldığından  ve regex kullanarak arıyoruz
+    return await Interview.findOne({ link: new RegExp(uuid) });
+  }
+  
+  
   async findAll() {
     return await Interview.find().populate("candidates");
   }
@@ -33,7 +39,5 @@ async getAllInterviews() {
 }
 
 export default InterviewRepository;
-function generateUniqueLink() {
-  throw new Error("Function not implemented.");
-}
+
 

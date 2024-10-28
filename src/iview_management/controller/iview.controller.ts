@@ -88,30 +88,66 @@ export class InterviewController {
         res.status(400).json({ error: "Interview ID is missing" });
         return;
       }
-
+  
       console.log("Received interviewId:", interviewId);
-
-      // Interview'i bul ve soruları populate ile doldur
-      const interview = await Interview.findOne({ _id: interviewId })
-        .populate('questions', 'questionText duration');
-
+  
+      // Interview'i bul
+      const interview = await Interview.findOne({ _id: interviewId });
+  
       if (!interview) {
         console.log("Interview not found");
         res.status(404).json({ message: "Interview not found" });
         return;
       }
-
+  
       console.log("Found Interview:", interview);
-
-      // Soruları güvenli bir şekilde IQuestion[] olarak al
-      const populatedQuestions = interview.questions as unknown as IQuestion[];
-
-      // Link içerisinden UUID'yi çıkar
+  
+      // Link içerisinden UUID'yi çıkar (linkin sonundaki UUID kısmı)
       const interviewLink = interview.link?.split('/').pop(); // Son kısımdaki UUID'yi alır
-
-      // Soruların text ve duration bilgilerini ve UUID'yi döndür
+  
+      // UUID'yi döndür
       res.status(200).json({
         uuid: interviewLink, // UUID'yi döndür
+      });
+    } catch (error) {
+      console.log("Error fetching interview:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+
+  public getInterviewByUUID = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { uuid } = req.params; // URL'den gelen uuid
+      if (!uuid) {
+        res.status(400).json({ error: "UUID is missing" });
+        return;
+      }
+  
+      console.log("Received UUID:", uuid);
+  
+      // Interview'ların tüm linklerini alıp UUID'yi split ile son parçadan kontrol ediyoruz
+      const interviews = await Interview.find(); // Tüm mülakatları alıyoruz
+      const matchedInterview = interviews.find((interview) => {
+        const interviewLinkUUID = interview.link?.split('/').pop(); // Linkin son parçasını (UUID) alıyoruz
+        return interviewLinkUUID === uuid; // UUID ile eşleşmeyi kontrol ediyoruz
+      });
+  
+      if (!matchedInterview) {
+        console.log("Interview not found");
+        res.status(404).json({ message: "Interview not found" });
+        return;
+      }
+  
+      console.log("Found Interview:", matchedInterview);
+  
+      // Soruları güvenli bir şekilde IQuestion[] olarak alıyoruz
+      const populatedQuestions = matchedInterview.questions as unknown as IQuestion[];
+  
+      // Soruların text ve duration bilgilerini döndürüyoruz
+      res.status(200).json({
+        interviewId: matchedInterview._id, // MongoDB ID'sini döndürüyoruz
         questions: populatedQuestions.map((question) => ({
           questionText: question.questionText,
           duration: question.duration,
@@ -124,7 +160,12 @@ export class InterviewController {
       });
     }
   };
+  
+  
+  
+  
 
+  
   // Get Interview by ID
   public getInterviewById = async (req: Request, res: Response): Promise<void> => {
     try {
