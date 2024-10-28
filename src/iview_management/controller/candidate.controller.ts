@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import CandidateService from "../service/candidate.service";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
+import { Candidate } from "../models/candidate.schema";
 
 export class CandidateController {
   
@@ -32,23 +33,25 @@ export class CandidateController {
   
   
 
-  public getCandidateById = async (
+  public getCandidateByInterviewId = async (
     req: Request,
     res: Response
   ): Promise<void> => {
     try {
-      const candidate = await this.candidateService.getCandidateById(
-        req.params.id
-      );
-      if (!candidate) {
-        res.status(404).json({ message: "Candidate not found" });
+      const { interviewId } = req.params;  // URL'den interviewId parametresini alıyoruz
+  
+      // Belirli bir mülakat ID'sine göre adayları bul
+      const candidates = await Candidate.find({ interview: interviewId }, 'name surname videoUrl');  // Sadece gerekli alanları seçiyoruz
+  
+      if (candidates.length === 0) {
+        res.status(404).json({ message: "Bu mülakata ait aday bulunamadı." });
         return;
       }
-      res.status(200).json(candidate);
+  
+      // Aday bilgilerini döndürüyoruz
+      res.status(200).json(candidates);
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
     }
   };
 
@@ -94,20 +97,80 @@ export class CandidateController {
       });
     }
   };
-
-  public getCandidatesByInterviewId = async (
+//adayın status bilgisi döner.
+  public getCandidateStatus = async (
     req: Request,
     res: Response
   ): Promise<void> => {
     try {
-      const candidates = await this.candidateService.getCandidatesByInterviewId(
-        req.params.interviewId
-      );
-      res.status(200).json(candidates);
+      const { id } = req.params;  // URL'den adayın id'sini alıyoruz
+  
+      const candidate = await this.candidateService.getCandidateById(id);
+  
+      if (!candidate) {
+        res.status(404).json({ message: "Candidate not found" });
+        return;
+      }
+  
+      // Adayın sadece status bilgisini döndürüyoruz
+      res.status(200).json({ status: candidate.status });
     } catch (error) {
       res.status(500).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
+  //frontendden gelen yeni statusu günceller
+  public updateCandidateStatus = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;  // URL'den adayın id'sini alıyoruz
+      const { status } = req.body;  // frontend'den status alıyoruz
+  
+      if (!status) {
+        res.status(400).json({ message: "Status is required" });
+        return;
+      }
+  
+      const updatedCandidate = await this.candidateService.updateCandidate(id, { status });
+  
+      if (!updatedCandidate) {
+        res.status(404).json({ message: "Candidate not found" });
+        return;
+      }
+  
+      res.status(200).json(updatedCandidate);
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+  //toplam aday sayısı ve pending aday sayısını alır
+  public getCandidateStatsByInterviewId = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { interviewId } = req.params;
+  
+      // Toplam aday sayısı ve pending aday sayısını al
+      const totalCandidates = await this.candidateService.getTotalCandidatesByInterviewId(interviewId);
+      const pendingCandidates = await this.candidateService.getPendingCandidatesByInterviewId(interviewId);
+  
+      // Sonuçları döndür
+      res.status(200).json({
+        totalCandidates,
+        pendingCandidates
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  };
+  
+
 }

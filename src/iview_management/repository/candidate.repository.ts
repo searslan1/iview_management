@@ -25,6 +25,15 @@ class CandidateRepository {
   async findByInterviewId(interviewId: string) {
     return await Candidate.find({ interviewId });
   }
+  // Belirli bir mülakat ID'sine göre toplam aday sayısını bul
+  async countCandidatesByInterviewId(interviewId: string) {
+    return await Candidate.countDocuments({ interview: interviewId });
+  }
+
+  // Belirli bir mülakat ID'sine göre pending durumda olan adayların sayısını bul
+  async countPendingCandidatesByInterviewId(interviewId: string) {
+    return await Candidate.countDocuments({ interview: interviewId, status: "pending" });
+  }
 }
 
 export default CandidateRepository;

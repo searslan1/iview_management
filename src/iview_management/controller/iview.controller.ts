@@ -25,35 +25,46 @@ export class InterviewController {
       const questions = await Question.find({
         tags: { $regex: new RegExp(packageName, "i") }  // Küçük/büyük harf duyarsız arama
       });
-
+  
       // Soruların ID'lerini map'liyoruz
       const questionIds = questions.map((q) => q._id);
-
+  
       // UUID ile benzersiz bir link oluşturuyoruz
       const interviewLink = uuidv4(); // Benzersiz link
-
-      // Interview DTO'yu oluşturuyoruz
-      const interviewDTO = new CreateInterviewDTO({
-        title,
-        date: new Date(expireDate),
-        questions: questionIds,
-      });
-
+  
+      // expireDate formatını kontrol ediyoruz
       if (!Date.parse(expireDate)) {
         throw new Error("Invalid date format");
       }
-
+  
+      // Mülakat tarihinin geçmiş olup olmadığını kontrol ediyoruz
+      const currentDate = new Date();
+      const interviewDate = new Date(expireDate);
+  
+      let status = "live";  // Varsayılan olarak mülakat live
+      if (interviewDate < currentDate) {
+        status = "not live";  // Mülakat tarihi geçmişse, status 'not live' olarak ayarlanır
+      }
+  
+      // Interview DTO'yu oluşturuyoruz
+      const interviewDTO = new CreateInterviewDTO({
+        title,
+        date: interviewDate,
+        questions: questionIds,
+        status,  // Mülakat durumu
+      });
+  
       // Yeni mülakat nesnesini oluşturuyoruz ve link'i ekliyoruz
       const newInterview = {
         ...interviewDTO,
         link: `http://localhost:5174/interview/${interviewLink}`, // Link oluşturuluyor
       };
-
+  
       // Servis katmanında yeni interview'u kaydediyoruz
       const createdInterview = await this.interviewService.createInterview(newInterview);
-
+  
       console.log("Created Interview:", createdInterview);
-
+  
       res.status(201).json(createdInterview);
     } catch (error) {
       res.status(400).json({
@@ -61,6 +72,7 @@ export class InterviewController {
       });
     }
   };
+  
 
   // Get all interviews with questions
   public getAllInterviews = async (

@@ -1,11 +1,13 @@
 export class CreateInterviewDTO {
   title: string;
   date: Date;
-  questions: string[];  // Soruların ID'leri
+  questions: string[];
+  status: string;  // Status alanını ekliyoruz
 
-  constructor({ title, date, questions }: any) {
+  constructor({ title, date, questions, status }: any) {
     this.title = title;
     this.date = date;
-    this.questions = questions;  // Soruların ID'leri
+    this.questions = questions;
+    this.status = status;  // Status parametresi burada ekleniyor
   }
 }

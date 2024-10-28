@@ -11,7 +11,22 @@ class InterviewService {
   }
 
   async createInterview(interviewData: CreateInterviewDTO) {
-    return await this.interviewRepository.create(interviewData);
+    const currentDate = new Date();
+    const interviewDate = new Date(interviewData.date);
+
+    // Mülakat tarihini kontrol ediyoruz
+    let status = "live";  // Varsayılan olarak "live"
+    if (interviewDate < currentDate) {
+      status = "not live";  // Geçmiş bir tarihse "not live"
+    }
+
+    // Status alanını ekliyoruz
+    const newInterviewData = {
+      ...interviewData,
+      status
+    };
+
+    return await this.interviewRepository.create(newInterviewData);
   }
 
   async getAllInterviews() {
