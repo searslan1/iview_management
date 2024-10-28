@@ -4,6 +4,7 @@ import { CreateInterviewDTO } from "../dto/iview.dto";
 import { v4 as uuidv4 } from 'uuid';
 import { IQuestion, Question } from "../../question_management/entity/question";
 import { Interview } from "../models/iview.schema";
+import { getDefaultHighWaterMark } from "stream";
 
 export class InterviewController {
   private interviewService: InterviewService;
@@ -117,38 +118,31 @@ export class InterviewController {
     }
   };
 
+  
   public getInterviewByUUID = async (req: Request, res: Response): Promise<void> => {
+    const { uuid } = req.params; // URL'den gelen UUID
+    console.log("Received UUID:", uuid);
+  
     try {
-      const { uuid } = req.params; // URL'den gelen uuid
-      if (!uuid) {
-        res.status(400).json({ error: "UUID is missing" });
-        return;
-      }
+      // UUID'ye sahip linki buluyoruz
+      const interview = await Interview.findOne({ link: `http://localhost:5174/interview/${uuid}` })
+        .populate('questions', 'questionText duration'); // Soru metinlerini ve sürelerini alıyoruz
   
-      console.log("Received UUID:", uuid);
-  
-      // Interview'ların tüm linklerini alıp UUID'yi split ile son parçadan kontrol ediyoruz
-      const interviews = await Interview.find(); // Tüm mülakatları alıyoruz
-      const matchedInterview = interviews.find((interview) => {
-        const interviewLinkUUID = interview.link?.split('/').pop(); // Linkin son parçasını (UUID) alıyoruz
-        return interviewLinkUUID === uuid; // UUID ile eşleşmeyi kontrol ediyoruz
-      });
-  
-      if (!matchedInterview) {
+      if (!interview) {
         console.log("Interview not found");
         res.status(404).json({ message: "Interview not found" });
         return;
       }
   
-      console.log("Found Interview:", matchedInterview);
+      console.log("Found Interview:", interview);
   
-      // Soruları güvenli bir şekilde IQuestion[] olarak alıyoruz
-      const populatedQuestions = matchedInterview.questions as unknown as IQuestion[];
+      // `questions` alanını IQuestion[] olarak alıyoruz
+      const populatedQuestions = interview.questions as unknown as IQuestion[];
   
       // Soruların text ve duration bilgilerini döndürüyoruz
       res.status(200).json({
-        interviewId: matchedInterview._id, // MongoDB ID'sini döndürüyoruz
-        questions: populatedQuestions.map((question) => ({
+        title: interview.title,
+        questions: populatedQuestions.map((question: IQuestion) => ({
           questionText: question.questionText,
           duration: question.duration,
         })),
@@ -160,6 +154,9 @@ export class InterviewController {
       });
     }
   };
+  
+  
+  
   
   
   
