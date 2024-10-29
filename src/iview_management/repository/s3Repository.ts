@@ -9,12 +9,14 @@ export const uploadVideoToS3 = async (file: Express.Multer.File, uniqueFileName:
         Bucket: process.env.BUCKET_NAME!,
         Key: `videos/${uniqueFileName}`, // Benzersiz dosya adı burada kullanılıyor
         Body: fileContent,
-        ContentType: file.mimetype
+        ContentType: file.mimetype,
+       
     };
 
     try {
         const data = await s3.upload(params).promise(); // S3'ye yükle
         return data.Location; // Yüklenen dosyanın URL'sini döndür
+        
     } catch (err) {
         throw new Error('S3\'ye yükleme hatası: ' + (err as Error).message);
     }

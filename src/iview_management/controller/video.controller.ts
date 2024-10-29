@@ -20,13 +20,13 @@ export const uploadVideoController = async (req: Request, res: Response): Promis
         }
 
         // Service katmanına dosya ve formId'yi (candidateId) ilet
-        const videoUrl = await uploadVideo(file, formId);
+        const fileName = await uploadVideo(file, formId);  // Yalnızca dosya adı döner
 
-        // Candidate'in video URL'sini güncelle
-        candidate.videoUrl = videoUrl;
+        // Candidate'in video URL'sini (dosya adı olarak) güncelle
+        candidate.videoUrl = fileName;  // Sadece dosya adı kaydedilir
         await candidate.save(); // Adayın bilgilerini güncelle
 
-        res.status(200).json({ videoUrl }); // Başarıyla yüklenen dosyanın URL'sini döndür
+        res.status(200).json({ message: "Video başarıyla yüklendi" });  // Sadece mesaj dönülür, URL dönülmez
     } catch (err) {
         res.status(500).send((err as Error).message);
     }

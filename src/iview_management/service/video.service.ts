@@ -1,15 +1,25 @@
-import { uploadVideoToS3 } from '../repository/s3Repository';
-import { v4 as uuidv4 } from 'uuid'; // Benzersiz dosya adı için
+import s3 from '../service/aws.service';
+import fs from 'fs';
 
 export const uploadVideo = async (file: Express.Multer.File, formId: string): Promise<string> => {
-    try {
-        // Benzersiz dosya adını oluştur: formId_uuid.mp4
-        const uniqueFileName = `${formId}_${uuidv4()}.mp4`;
+    const fileContent = fs.readFileSync(file.path); // Dosya içeriklerini oku
 
-        // Repository katmanına dosya ve benzersiz adı ilet
-        const videoUrl = await uploadVideoToS3(file, uniqueFileName);
-        return videoUrl; // Yüklenen dosyanın URL'sini döndür
+    // Benzersiz dosya adı oluşturma (formId ile birlikte)
+    const uniqueFileName = `${formId}_${Date.now()}_${file.originalname}`;
+
+    // S3'ye yükleme parametreleri
+    const params = {
+        Bucket: process.env.BUCKET_NAME!,  // S3 Bucket adını kontrol edin
+        Key: `videos/${uniqueFileName}`,   // Benzersiz dosya adı
+        Body: fileContent,
+        ContentType: file.mimetype
+    };
+
+    try {
+        // S3'e dosya yükleme
+        await s3.upload(params).promise();  // Sadece yükleme yapılır, dönen değeri kontrol etmiyoruz
+        return uniqueFileName;  // Dosya adını döndürürüz
     } catch (err) {
-        throw new Error('Video yükleme hatası: ' + (err as Error).message);
+        throw new Error('S3\'ye yükleme hatası: ' + (err as Error).message);
     }
 };
