@@ -1,289 +1,240 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Toastify stil dosyası
-import useInterviewStore from '../stores/useInterviewFetchStore'; // Soruları almak için state
-//import useMediaStore from '../stores/RecordVideoStore'; // Medya upload fonksiyonu ve fileId
+import 'react-toastify/dist/ReactToastify.css';
+import useInterviewFetchStore from '../stores/useInterviewFetchStore';
+import { useParams } from 'react-router-dom';
+import { MdOutlineEmergencyRecording } from "react-icons/md";
+import { GiStopSign } from "react-icons/gi";
+import { LuTv2 } from "react-icons/lu";
+import { BsSkipForwardBtn } from "react-icons/bs";
+import useCandidateStore from '../stores/usePersonalFormStore';
+import useVideoUploadStore from '../stores/useVideoUploadStore';
 
-const QuestionPanel = ({ interviewId }) => {
-  const { questions, loadInterview_Id } = useInterviewStore(); // Soruları almak için state
-  // const { uploadMedia, isLoading, error, fileId } = useMediaStore(); // Medya upload fonksiyonu ve fileId
+const InterviewPage = () => {
+  const { surname } = useCandidateStore();
+  const { uuid } = useParams();
+  const { loadInterview_Id, getQuestions } = useInterviewFetchStore();
+  const { uploadVideo, isUploading } = useVideoUploadStore();
+  const questions = getQuestions();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
-  const [isPreviewing, setIsPreviewing] = useState(false); // Önizleme durumu için state
   const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [videoBlob, setVideoBlob] = useState(null); // Blob verisini tutmak için state
-  const [setVideoURL] = useState(null); // Kaydedilen video URL'si
+  const [videoBlob, setVideoBlob] = useState(null);
+  const [videoURL, setVideoURL] = useState(null);
   const [stream, setStream] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(120); // Başlangıç süresi (2 dakika)
-  const [totalTime, setTotalTime] = useState(600); // Total zaman, örneğin 10 dakika (600 saniye)
-  const [timerInterval, setTimerInterval] = useState(null);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(120);
+  const [totalTime, setTotalTime] = useState(0);
   const videoRef = useRef(null);
-  const previewStreamRef = useRef(null); // Önizleme için stream referansı
+  const questionTimerRef = useRef(null);
+  const totalTimerRef = useRef(null);
 
-  // Soruları çek ve ilk sorunun süresini ayarla
   useEffect(() => {
-    const fetchQuestions = async () => {
-      await loadInterview_Id(interviewId);
-    };
-    fetchQuestions();
-  }, [interviewId, loadInterview_Id]);
+    loadInterview_Id(uuid);
+  }, [uuid, loadInterview_Id]);
 
-  // Mevcut sorunun timeLimit süresini ayarla
   useEffect(() => {
     if (questions.length > 0) {
       const currentQuestion = questions[currentQuestionIndex];
-      if (currentQuestion.timeLimit) {
-        setTimeRemaining(currentQuestion.timeLimit * 60); // Dakika cinsinden gelen timeLimit'i saniyeye çevir
+      if (currentQuestion.duration) {
+        setTimeRemaining(currentQuestion.duration * 60);
       }
     }
   }, [questions, currentQuestionIndex]);
 
-  // Geri sayım başlatma fonksiyonu
-  const startTimer = () => {
-    if (timeRemaining > 0) {
-      const interval = setInterval(() => {
-        setTimeRemaining((prevTime) => {
-          if (prevTime === 1) {
-            clearInterval(interval);
-            handleSkip(); // Süre bittiğinde bir sonraki soruya geç
-          }
-          return prevTime - 1;
-        });
-        setTotalTime((prevTotal) => prevTotal - 1); // Total zaman güncelleniyor
-      }, 1000);
-      setTimerInterval(interval);
-      return () => clearInterval(interval); // Bileşen kapandığında temizle
-    }
-  };
-
-  // Sorular arasında geçiş
-  const handleSkip = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      clearInterval(timerInterval);
-      setTimeRemaining(questions[currentQuestionIndex + 1].timeLimit * 60 || 0); // Yeni sorunun timeLimit'ini başlat
-      startTimer();
-    }
-  };
-
-  // Video kaydını başlatma fonksiyonu
-  const handleStartRecording = async () => {
-    try {
-      if (isPreviewing && previewStreamRef.current) {
-        previewStreamRef.current.getTracks().forEach(track => track.stop()); // Önizleme stream'ini durdur
-        setIsPreviewing(false); // Önizleme modunu kapat
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      const recorder = new MediaRecorder(stream);
-      setMediaRecorder(recorder);
-      videoRef.current.srcObject = stream;
-      recorder.start();
-      setStream(stream);
-      setIsRecording(true);
-      startTimer();
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          const blob = new Blob([event.data], { type: 'video/webm' });
-          setVideoBlob(blob); // Blob'u state'e kaydet
-          const videoUrl = URL.createObjectURL(blob);
-          setVideoURL(videoUrl); // Video URL'sini oluştur
+  const startQuestionTimer = () => {
+    if (questionTimerRef.current) clearInterval(questionTimerRef.current);
+    questionTimerRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(questionTimerRef.current);
+          handleSkip();
+          return 0;
         }
-      };
-    } catch (error) {
-      console.error('Medya cihazlarına erişim hatası:', error);
-    }
-  };
-
-  // Önizleme fonksiyonu
-  const handlePreview = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false, // Sadece video, ses yok
+        return prev - 1;
       });
-      previewStreamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
-      setIsPreviewing(true); // Önizleme durumunu true yap
-    } catch (error) {
-      console.error('Önizleme başlatılamadı:', error);
+    }, 1000);
+  };
+
+  const startTotalTimer = () => {
+    if (totalTimerRef.current) clearInterval(totalTimerRef.current);
+    totalTimerRef.current = setInterval(() => {
+      setTotalTime((prevTotal) => prevTotal + 1);
+    }, 1000);
+  };
+
+  const handleCameraToggle = async () => {
+    if (!cameraOn) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        setStream(stream);
+        videoRef.current.srcObject = stream;
+        setCameraOn(true);
+      } catch (error) {
+        console.error("Error accessing media devices: ", error);
+        toast.error("Kameraya veya mikrofona erişim sağlanamadı.");
+      }
     }
   };
 
-  // Video kaydını durdurma fonksiyonu
-  const handleStopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-      setIsRecording(false);
-      stream.getTracks().forEach((track) => track.stop()); // Kamera ve mikrofonu kapat
-      videoRef.current.srcObject = null;
-      clearInterval(timerInterval);
+  const handleStopRecording = async () => {
+    if (isRecording && mediaRecorder) {
+      const confirmStop = window.confirm("Mülakatı sonlandırmak istediğinizden emin misiniz?");
+      if (confirmStop) {
+        // Stop the recording process
+        mediaRecorder.stop();
+        setIsRecording(false);
+  
+        clearInterval(questionTimerRef.current);
+        clearInterval(totalTimerRef.current);
+  
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          setStream(null);
+        }
+        setCameraOn(false);
+  
+        // Ensure videoBlob is available before upload
+        if (videoBlob) {
+          console.log("Attempting to upload video...");  // Debugging line
+          try {
+            const videoUrl = await uploadVideo(videoBlob, uuid);
+            setVideoURL(videoUrl);
+            if (videoUrl) {
+              console.log("Upload success:", videoUrl);  // Debugging line
+              toast.success("Video başarıyla yüklendi.");
+            } else {
+              console.error("Upload failed: No URL returned");
+              toast.error("Video yüklenemedi. Lütfen tekrar deneyin.");
+            }
+          } catch (error) {
+            console.error("Upload error:", error);  // Debugging line
+            toast.error("Video yüklenemedi. Lütfen tekrar deneyin.");
+          }
+        } else {
+          console.error("Video blob is empty, cannot upload.");
+          toast.error("Video kaydı alınamadı.");
+        }
+      }
     }
   };
-
-  // Video upload işlemi
-  const handleSubmit = async () => {
-    if (!videoBlob) {
-      alert('Lütfen önce bir video kaydedin.');
+  
+  const handleStartRecording = () => {
+    if (!cameraOn) {
+      toast.error("Kamera açık değil!");
       return;
     }
-
-    // Dinamik dosya ismi oluşturuluyor
-    const fileName = `video_${Date.now()}.webm`; // Örnek dosya adı; tarih damgası ekliyoruz
-
-    try {
-      await uploadMedia(videoBlob, fileName); // Videoyu fileName ile yüklüyoruz
-
-      // Toastify uyarısı
-      toast.success('Mülakatınız başarıyla gönderilmiştir!', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    } catch (err) {
-      console.error('Video yüklenirken hata oluştu:', err);
-      alert('Video yüklenemedi.');
+  
+    if (!isRecording && stream) {
+      const recorder = new MediaRecorder(stream);
+      const chunks = []; // Store all chunks here
+      setMediaRecorder(recorder);
+  
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+  
+      recorder.onstop = () => {
+        if (chunks.length > 0) {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          setVideoBlob(blob);
+          const videoUrl = URL.createObjectURL(blob);
+          setVideoURL(videoUrl);
+        } else {
+          console.error("No data available in chunks");
+          toast.error("Video kaydı alınamadı.");
+        }
+      };
+  
+      recorder.start();
+      setIsRecording(true);
+      startTotalTimer();
+      startQuestionTimer();
     }
   };
-
-
-  // Geri kalan zamanı dakika ve saniye olarak göstermek için formatlama fonksiyonu
-  const formatTime = (timeInSeconds) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = timeInSeconds % 60;
-    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  
+  const handleSkip = () => {
+    if (isRecording && currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setTimeRemaining(questions[currentQuestionIndex + 1]?.duration * 60 || 0);
+      startQuestionTimer();
+    } else if (!isRecording) {
+      toast.warn("Kayda başlamadan sonraki soruya geçemezsiniz.");
+    }
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Toastify container */}
+    <div className="flex flex-col items-center bg-[#ceebe9] justify-center h-screen">
       <ToastContainer />
-      {/* İlerleme Çubuğu */}
-      <div className="relative h-6 bg-gray-300 rounded-lg overflow-hidden shadow-inner">
+      
+      {/* Progress Bar */}
+      <div className="w-full max-w-5xl bg-gray-200 rounded-full h-4 mb-4">
         <div
-          className="h-full bg-green-600 transition-all duration-500 ease-out"
-          style={{
-            width: isRecording && questions.length > 0
-              ? `${((currentQuestionIndex + 1) / questions.length) * 100}%`
-              : '0%'
-          }}
-        />
-        {questions.map((_, index) => (
-          index !== 0 && (
-            <div
-              key={index}
-              className="absolute h-full border-l-2 border-white"
-              style={{ left: `${(index / questions.length) * 100}%` }}
-            />
-          )
-        ))}
+          className="bg-yellow-500 h-4 rounded-full"
+          style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+        ></div>
+         
+         
       </div>
-
-      <div className="flex h-full p-4 bg-gray-100 rounded-lg shadow-md border-4 border-gray-400">
-        {/* Sol taraf: Video */}
-        <div className="w-1/2 flex items-center justify-center border-r-4 border-gray-300 p-4">
-          <div className="flex justify-center items-center w-4/5 h-[560px] bg-black rounded-lg">
-            <video ref={videoRef} className="w-full h-full" autoPlay muted />
+  
+      <div className="flex w-full max-w-5xl bg-white shadow-2xl rounded-xl p-6 h-[500px] mt-1">
+        
+        {/* Left side - Video feed */}
+        <div className="w-3/4 flex flex-col items-center border-r-2 border-gray-300 pr-4">
+        
+          <video ref={videoRef} className="w-full rounded-2xl h-[410px] mr-4" autoPlay muted />
+          
+          <div className="flex justify-between w-full mt-4">
+            <button onClick={handleCameraToggle} className="bg-yellow-500 text-white px-4 py-2 rounded mr-6">
+              <LuTv2 size={30} />
+            </button>
+            <button onClick={handleStartRecording} className="bg-teal-500 text-white px-4 py-2 rounded flex items-center justify-center"
+             disabled={isUploading}>
+              <MdOutlineEmergencyRecording size={30} />
+           
+            </button>
+            <button onClick={handleStopRecording} className="bg-red-500 text-white px-4 py-2 rounded mr-6">
+              <GiStopSign size={30} />
+            </button>
           </div>
         </div>
-        {/* Sağ taraf: Zaman ve Soru */}
-        <div className="w-1/2 p-4 flex flex-col justify-between">
-          {questions.length > 0 ? (
-            <>
-              {/* Zaman alanı */}
-              <div className="flex justify-between items-center p-2 mb-4">
-                <div className="flex flex-col items-center justify-center bg-[#d0dcea] p-2 rounded-md">
-                  <div className="text-lg font-bold text-gray-700">
-                    Question Time: {formatTime(timeRemaining)}
-                  </div>
-                </div>
-                <div className="flex flex-col items-center justify-center bg-[#d0dcea] p-2 rounded-md">
-                  <div className="text-lg font-bold text-gray-700">
-                    Total Time: {formatTime(totalTime)}
-                  </div>
-                </div>
-              </div>
-              {/* Soru alanı */}
-              <div className="flex flex-col items-center justify-center mb-4 mt-6">
-                <div className="bg-gray-100 p-6 rounded-lg shadow-lg w-full max-w-xl text-center">
-                  {/* Soru başlığı */}
-                  <h2 className="text-xl font-bold mb-2 text-gray-800">
-                    Question {currentQuestionIndex + 1} of {questions.length}
-                  </h2>
-                  {/* Sorunun metni */}
-                  <p className="text-lg text-gray-700">
-                    {questions[currentQuestionIndex].questionText}
-                  </p>
-                </div>
-                {/* Soru geçiş göstergesi */}
-                <div className="flex mt-4 space-x-2">
-                  {questions.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-2 w-8 rounded-full ${index === currentQuestionIndex ? 'bg-blue-500' : 'bg-gray-300'
-                        }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              {/* Butonlar */}
-              <div className="text-center mt-auto">
-                {!videoBlob && (
-                  <>
-                    <button
-                      className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
-                      onClick={handleSkip}
-                      disabled={isRecording === false}
-                    >
-                      Skip
-                    </button>
-                    {!isRecording ? (
-                      <>
-                        <button
-                          className="bg-[#224064] text-white px-4 py-2 rounded mr-2"
-                          onClick={handlePreview}
-                          disabled={isPreviewing}
-                        >
-                          Preview
-                        </button>
-                        <button
-                          className="bg-[#224064] text-white px-4 py-2 rounded mr-2"
-                          onClick={handleStartRecording}
-                        >
-                          Start Recording
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        className="bg-red-500 text-white px-4 py-2 rounded mr-2"
-                        onClick={handleStopRecording}
-                      >
-                        Stop Recording
-                      </button>
-                    )}
-                  </>
-                )}
-                {videoBlob && (
-                  <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-                    onClick={handleSubmit}
-                  >
-                    Submit Video
-                  </button>
-                )}
-              </div>
-            </>
-          ) : (
-            <div>Loading questions...</div>
-          )}
+  
+        {/* Right side - Question and controls */}
+        <div className="w-1/2 pl-6 flex flex-col justify-between">
+          {/* Timer Section */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="bg-teal-100 p-2 rounded-md">
+              <p>Question Timer: {`${Math.floor(timeRemaining / 60).toString().padStart(2, '0')} : ${(timeRemaining % 60).toString().padStart(2, '0')}`}</p>
+            </div>
+            <div className="bg-teal-100 p-2 rounded-md">
+              <p>Total Timer: {`${Math.floor(totalTime / 60).toString().padStart(2, '0')} : ${(totalTime % 60).toString().padStart(2, '0')}`}</p>
+            </div>
+          </div>
+  
+          {/* Question Content */}
+          <div className="flex flex-col justify-start flex-1">
+            {/* Greeting */}
+            <div className="text-2xl font-semibold mb-4">
+              Merhaba, Sn. {surname}
+            </div>
+            <p className="text-gray-500">
+              Süre: {questions[currentQuestionIndex]?.duration || 0} dakika
+            </p>
+            <p className="text-lg font-semibold mb-2">
+              {`Soru ${currentQuestionIndex + 1}: ${questions.length > 0 ? questions[currentQuestionIndex].questionText : "Loading question..."}`}
+            </p>
+          </div>
+  
+          {/* Controls */}
+          <div className="flex justify-center mb-5 mt-4">
+            <button onClick={handleSkip} disabled={!isRecording} className="bg-purple-300 px-5 py-3 rounded">
+              <BsSkipForwardBtn size={30} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default QuestionPanel;
+export default InterviewPage;

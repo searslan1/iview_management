@@ -15,7 +15,7 @@ const ValidationSchema = Yup.object().shape({
 
 const FormPage = () => {
   const navigate = useNavigate();
-  const { interviewId } = useParams();
+  const { uuid } = useParams();
   const [form, setForm] = useState({
     name: '',
     surname: '',
@@ -29,9 +29,9 @@ const FormPage = () => {
     setForm(values);
 
     try {
-      const savedPersonalInfo = await submitCandidateForm(interviewId, values);
+      const savedPersonalInfo = await submitCandidateForm(uuid, values);
       const { candidateId: formId } = savedPersonalInfo;
-      navigate(`/interview/${interviewId}/${formId}`);
+      navigate(`/interview/${uuid}/${formId}`);
     } catch (error) {
       console.error("Form submission error:", error);
     } finally {
