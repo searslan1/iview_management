@@ -30,7 +30,7 @@ const useInterviewStore = create((set) => ({
     loadInterview_Id: async (interviewId) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await axios.get(`http://localhost:5000/api/interview/link/${interviewId}`);
+          const response = await axios.get(`http://localhost:5000/api/iview/link/${interviewId}`);
           set({ interview: response.data, isLoading: false });
         } catch (error) {
           console.error('Error loading interview:', error);

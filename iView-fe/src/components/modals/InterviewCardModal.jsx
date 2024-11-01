@@ -2,57 +2,55 @@ import React, { useState, useEffect } from 'react';
 import { FaLink, FaTrash, FaQuestionCircle } from "react-icons/fa";
 import QuestionModal from '../modals/InterviewQuestionsModal';
 import useInterviewStore from '../../store/useInterviewListStore';
+import { Link } from 'react-router-dom';
+
 
 const isExpired = (expireDate) => {
   const currentDate = new Date();
   const interviewExpireDate = new Date(expireDate);
   return interviewExpireDate < currentDate;
 };
-
 const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDate, packageName }) => {
+ 
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-  const { loadInterview_Id,  isLoading, error } = useInterviewStore();
+  const { loadInterview_Id, deleteInterview, interview, isLoading, error } = useInterviewStore(); // interview state'ini aldık
   const publishedStatus = isExpired(expireDate) ? 'Not Live' : 'Live';
-
-
-  useEffect(() => { 
+  useEffect(() => {
     if (id) {
-      loadInterview_Id(id);
+      console.log("Interview ID:", id); // ID'yi konsola yazdırıyoruz
+      loadInterview_Id(id); // ID'yi yüklemek için fonksiyon çağrısı
     }
   }, [id, loadInterview_Id]);
-
+  useEffect(() => {
+    console.log("Loaded Interview:", interview); // interview verisini konsola yazdırıyoruz
+  }, [interview]); // interview state'i değiştiğinde tetiklenir
+  
   const openQuestionModal = () => setIsQuestionModalOpen(true);
   const closeQuestionModal = () => setIsQuestionModalOpen(false);
-
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this interview?')) {
       await deleteInterview(id);
-      console.log('Interviewid:', id)
-
+      console.log('Interviewid:', id);
     }
   };
-
   const handleCopyLink = async () => {
     if (isExpired(expireDate)) {
-      setAccessError(true);
-      alert("Interview has expired, link cannot be copied.");
-      return;
+        alert("Interview has expired, link cannot be copied.");
+        return;
     }
-
-   
-   
-    // Eğer ID mevcutsa, linki kopyala
-    const interviewLink = `http://localhost:5174/information-form/${id}`;
-    try {
-      await navigator.clipboard.writeText(interviewLink);
-      alert("Link copied to clipboard!");
-    } catch (error) {
-      console.error("Failed to copy: ", error);
+    console.log("Interview in handleCopyLink:", interview); // Interview'ı burada kontrol ediyoruz
+    if (interview && interview.uuid) {
+        const interviewLink = `http://localhost:5174/information-form/${interview.uuid}`;
+        try {
+            await navigator.clipboard.writeText(interviewLink);
+            alert("Link copied to clipboard!");
+        } catch (error) {
+            console.error("Failed to copy: ", error);
+        }
+    } else {
+        alert("UUID could not be retrieved. Please try again.");
     }
   };
-
-
-
   return (
     <div className="relative bg-white py-8 px-6 rounded-3xl w-[30%] my-4 shadow-xl mr-6">
       <div className="absolute right-4 top-4">
@@ -90,11 +88,12 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDat
             <p>{publishedStatus}</p>
           </div>
           <div>
-            <a href="#" className="text-[#47A7A2] hover:underline">See Videos &gt;</a>
+          <Link to={`/see-videos/${id}`} className="text-[#47A7A2] hover:underline">
+    See Videos &gt;
+  </Link>
           </div>
         </div>
       </div>
-
       {/* Question Modal */}
       {isQuestionModalOpen && (
         <QuestionModal
@@ -106,5 +105,4 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDat
     </div>
   );
 };
-
 export default InterviewCard;

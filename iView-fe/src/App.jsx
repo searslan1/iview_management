@@ -7,7 +7,7 @@ import ManageQuestionList from './pages/ManageQuestionPackagePage';
 import QuestionListPage from './pages/QuestionListPage';
 import PackageListPage from './pages/PackageListPage';
 import InterviewList from './pages/InterviewListPage';
-
+import SeeVideosPage from './pages/SeeVideosPage';
 
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
 
           {/* Interview list route with nested video-view route */}
           <Route path="interview-list" element={<InterviewList />}>
-            
+          <Route path="see-videos/:interviewId" element={<SeeVideosPage />} />
           
           </Route>
 
