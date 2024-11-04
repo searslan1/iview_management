@@ -12,8 +12,8 @@ const App = () => {
       <div className="App">
         {/* Rotalar */}
         <Routes>
-          <Route path="/information-form/:interviewId" element={<PersonalInformationForm />} />
-          <Route path="/interview/:interviewId/:formId" element={<InterviewPage />} /> {/* formId ve interviewId URL'den geliyor */}
+          <Route path="/information-form/:uuid" element={<PersonalInformationForm />} />
+          <Route path="/interview/:uuid/:formId" element={<InterviewPage />} /> {/* formId ve interviewId URL'den geliyor */}
         </Routes>
       </div>
     </Router>
