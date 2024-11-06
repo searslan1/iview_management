@@ -1,6 +1,6 @@
 import s3 from '../service/aws.service';
 import fs from 'fs';
-
+import { getPresignedUrlRepository } from '../repository/s3Repository';
 export const uploadVideo = async (file: Express.Multer.File, formId: string): Promise<string> => {
     const fileContent = fs.readFileSync(file.path); // Dosya içeriklerini oku
 
@@ -22,4 +22,8 @@ export const uploadVideo = async (file: Express.Multer.File, formId: string): Pr
     } catch (err) {
         throw new Error('S3\'ye yükleme hatası: ' + (err as Error).message);
     }
+    
+};
+export const getPresignedVideoUrlService = async (videoKey: string): Promise<string> => {
+    return await getPresignedUrlRepository(videoKey);
 };
