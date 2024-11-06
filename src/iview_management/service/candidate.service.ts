@@ -10,7 +10,8 @@ class CandidateService {
   }
 
   async getCandidateByInterviewId(interviewId: string) {
-    return await Candidate.find({ interview: interviewId }, 'name surname videoUrl'); 
+    const candidates = await candidateRepository.findByInterviewId(interviewId);
+    return await candidateRepository.getPresignedUrlsForCandidates(candidates); // Presigned URL'leri aday bilgilerine ekleyerek döndür
   }
 
   async updateCandidate(id: string, updateData: any) {
@@ -22,17 +23,17 @@ class CandidateService {
   }
 
   async getCandidatesByInterviewId(interviewId: string) {
-    return await Candidate.find({ interview: interviewId }).populate('interview'); // Interview ile ilişkili adayları getir
+    return await Candidate.find({ interview: interviewId }).populate('interview');
   }
+
   async getCandidateById(id: string) {
     return await candidateRepository.findById(id);
   }
-  // Mülakat ID'sine göre toplam aday sayısı
+
   async getTotalCandidatesByInterviewId(interviewId: string) {
     return await candidateRepository.countCandidatesByInterviewId(interviewId);
   }
 
-  // Mülakat ID'sine göre pending durumda olan aday sayısı
   async getPendingCandidatesByInterviewId(interviewId: string) {
     return await candidateRepository.countPendingCandidatesByInterviewId(interviewId);
   }

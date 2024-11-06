@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { uploadVideo } from '../service/video.service';
 import { Candidate } from '../models/candidate.schema';
-import { getPresignedVideoUrlService } from '../service/video.service'; 
+
 
 
 export const uploadVideoController = async (req: Request, res: Response): Promise<void> => {
@@ -33,15 +33,4 @@ export const uploadVideoController = async (req: Request, res: Response): Promis
         res.status(500).send((err as Error).message);
     }
     
-};
-export const getVideoPresignedUrl = async (req: Request, res: Response): Promise<void> => {
-    const { videoKey } = req.params;
-
-    try {
-        const presignedUrl = await getPresignedVideoUrlService(videoKey);
-        res.status(200).json({ presignedUrl });
-    } catch (error) {
-        console.error('Presigned URL oluşturulamadı:', error);
-        res.status(500).json({ message: 'Presigned URL oluşturulamadı', error });
-    }
 };

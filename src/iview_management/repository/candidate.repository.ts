@@ -1,4 +1,5 @@
-import {Candidate} from "../models/candidate.schema";
+import { Candidate } from "../models/candidate.schema";
+import { getPresignedUrlRepository } from './s3Repository';  // S3 Presigned URL fonksiyonunu içe aktar
 
 class CandidateRepository {
   async create(candidateData: any) {
@@ -23,14 +24,25 @@ class CandidateRepository {
   }
 
   async findByInterviewId(interviewId: string) {
-    return await Candidate.find({ interviewId });
+    return await Candidate.find({ interview: interviewId }); // Tüm aday bilgilerini seçiyoruz
   }
-  // Belirli bir mülakat ID'sine göre toplam aday sayısını bul
+
+  async getPresignedUrlsForCandidates(candidates: any[]) {
+    return await Promise.all(
+      candidates.map(async (candidate) => {
+        const presignedUrl = await getPresignedUrlRepository(candidate.videoUrl);
+        return {
+          ...candidate.toObject(), // Tüm aday bilgilerini döndürüyoruz
+          videoUrl: presignedUrl,  // Presigned URL'i video anahtarı yerine koyuyoruz
+        };
+      })
+    );
+  }
+
   async countCandidatesByInterviewId(interviewId: string) {
     return await Candidate.countDocuments({ interview: interviewId });
   }
 
-  // Belirli bir mülakat ID'sine göre pending durumda olan adayların sayısını bul
   async countPendingCandidatesByInterviewId(interviewId: string) {
     return await Candidate.countDocuments({ interview: interviewId, status: "pending" });
   }

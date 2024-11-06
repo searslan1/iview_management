@@ -24,6 +24,3 @@ export const uploadVideo = async (file: Express.Multer.File, formId: string): Pr
     }
     
 };
-export const getPresignedVideoUrlService = async (videoKey: string): Promise<string> => {
-    return await getPresignedUrlRepository(videoKey);
-};

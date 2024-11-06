@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import CandidateService from "../service/candidate.service";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
 import { Candidate } from "../models/candidate.schema";
+import candidateService from "../service/candidate.service";
 
 export class CandidateController {
   
@@ -33,27 +34,26 @@ export class CandidateController {
   
   
 
-  public getCandidateByInterviewId = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const { interviewId } = req.params;  // URL'den interviewId parametresini alıyoruz
+    public getCandidateByInterviewId = async (
+      req: Request,
+      res: Response
+    ): Promise<void> => {
+      try {
+        const { interviewId } = req.params;
   
-      // Belirli bir mülakat ID'sine göre adayları bul
-      const candidates = await Candidate.find({ interview: interviewId }, 'name surname videoUrl');  // Sadece gerekli alanları seçiyoruz
+        // Aday bilgilerini ve presigned URL'leri al
+        const candidatesWithPresignedUrls = await this.candidateService.getCandidateByInterviewId(interviewId); 
   
-      if (candidates.length === 0) {
-        res.status(404).json({ message: "Bu mülakata ait aday bulunamadı." });
-        return;
+        if (candidatesWithPresignedUrls.length === 0) {
+          res.status(404).json({ message: "Bu mülakata ait aday bulunamadı." });
+          return;
+        }
+  
+        res.status(200).json(candidatesWithPresignedUrls);
+      } catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
       }
-  
-      // Aday bilgilerini döndürüyoruz
-      res.status(200).json(candidates);
-    } catch (error) {
-      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
-    }
-  };
+    };
 
   public updateCandidate = async (
     req: Request,
