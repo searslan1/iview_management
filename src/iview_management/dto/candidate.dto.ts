@@ -6,22 +6,25 @@ export class CreateCandidateDTO {
   kvkkApproval: boolean;
   videoUrl?: string;
   status?: string;
+  interview?: string; // Interview id'sini taşıyan alan
 
-  constructor({
-    name,
-    surname,
-    phoneNumber,
-    email,
-    kvkkApproval,
-    videoUrl,
-    status = "pending",
-  }: any) {
-    this.name = name;
-    this.surname = surname;
-    this.phoneNumber = phoneNumber;
-    this.email = email;
-    this.kvkkApproval = kvkkApproval;
-    this.videoUrl = videoUrl;
-    this.status = status;
+  constructor(data: {
+    name: string;
+    surname: string;
+    phoneNumber: string;
+    email: string;
+    kvkkApproval: boolean;
+    videoUrl?: string;
+    status?: string;
+    interview?: string;
+  }) {
+    this.name = data.name;
+    this.surname = data.surname;
+    this.phoneNumber = data.phoneNumber;
+    this.email = data.email;
+    this.kvkkApproval = data.kvkkApproval;
+    this.videoUrl = data.videoUrl;
+    this.status = data.status || "pending";
+    this.interview = data.interview;
   }
 }

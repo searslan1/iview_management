@@ -1,6 +1,7 @@
+
 import s3 from '../service/aws.service';
 import fs from 'fs';
-import { getPresignedUrlRepository } from '../repository/s3Repository';
+
 export const uploadVideo = async (file: Express.Multer.File, formId: string): Promise<string> => {
     const fileContent = fs.readFileSync(file.path); // Dosya içeriklerini oku
 

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import CandidateService from "../service/candidate.service";
 import { CreateCandidateDTO } from "../dto/candidate.dto";
-import { Candidate } from "../models/candidate.schema";
-import candidateService from "../service/candidate.service";
+import { Interview } from '../models/iview.schema';
+
 
 export class CandidateController {
   
@@ -17,14 +17,27 @@ export class CandidateController {
     res: Response
   ): Promise<void> => {
     try {
-      const candidateDTO = new CreateCandidateDTO(req.body);
-      
-      // Adayı kaydediyoruz
+      const { uuid, ...candidateData } = req.body;
+  
+      // Gelen uuid ve aday verilerini kontrol etmek için
+      console.log("Received UUID:", uuid);
+      console.log("Received Candidate Data:", candidateData);
+  
+      const interview = await Interview.findOne({ link: { $regex: uuid } });
+      if (!interview) {
+        res.status(404).json({ error: "Interview not found" });
+        return;
+      }
+  
+      const candidateDTO = new CreateCandidateDTO({ ...candidateData, interview: interview._id });
       const newCandidate = await this.candidateService.createCandidate(candidateDTO);
   
-      // Mongoose dokümanını toObject ile normal JavaScript objesine çeviriyoruz
+      // Yeni oluşturulan aday verilerini kontrol etmek için
+      console.log("Created Candidate:", newCandidate);
+  
       res.status(201).json({ candidateId: newCandidate._id, ...newCandidate.toObject() });
     } catch (error) {
+      console.error("Error in createCandidate:", error);
       res.status(400).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });
@@ -120,34 +133,36 @@ export class CandidateController {
       });
     }
   };
+
   //frontendden gelen yeni statusu günceller
   public updateCandidateStatus = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const { id } = req.params;  // URL'den adayın id'sini alıyoruz
-      const { status } = req.body;  // frontend'den status alıyoruz
-  
-      if (!status) {
-        res.status(400).json({ message: "Status is required" });
-        return;
-      }
-  
-      const updatedCandidate = await this.candidateService.updateCandidate(id, { status });
-  
-      if (!updatedCandidate) {
-        res.status(404).json({ message: "Candidate not found" });
-        return;
-      }
-  
-      res.status(200).json(updatedCandidate);
-    } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;  // URL'den adayın id'sini alıyoruz
+    const { status } = req.body;  // frontend'den status alıyoruz
+
+    if (!status) {
+      res.status(400).json({ message: "Status is required" });
+      return;
     }
-  };
+
+    const updatedCandidate = await this.candidateService.updateCandidate(id, { status }); // Burada status direkt string olarak gönderilmeli
+
+    if (!updatedCandidate) {
+      res.status(404).json({ message: "Candidate not found" });
+      return;
+    }
+
+    res.status(200).json(updatedCandidate);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
   //toplam aday sayısı ve pending aday sayısını alır
   public getCandidateStatsByInterviewId = async (
     req: Request,

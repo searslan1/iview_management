@@ -14,9 +14,10 @@ class CandidateService {
     return await candidateRepository.getPresignedUrlsForCandidates(candidates); // Presigned URL'leri aday bilgilerine ekleyerek döndür
   }
 
-  async updateCandidate(id: string, updateData: any) {
+  async updateCandidate(id: string, updateData: Partial<CreateCandidateDTO>) {
     return await candidateRepository.update(id, updateData);
   }
+  
 
   async deleteCandidate(id: string) {
     return await candidateRepository.delete(id);

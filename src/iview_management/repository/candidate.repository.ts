@@ -1,8 +1,9 @@
 import { Candidate } from "../models/candidate.schema";
-import { getPresignedUrlRepository } from './s3Repository';  // S3 Presigned URL fonksiyonunu içe aktar
+import { getPresignedUrlRepository } from './s3Repository';
+import { CreateCandidateDTO } from "../dto/candidate.dto"; // DTO'yu içe aktarın
 
 class CandidateRepository {
-  async create(candidateData: any) {
+  async create(candidateData: CreateCandidateDTO) {
     const candidate = new Candidate(candidateData);
     return await candidate.save();
   }
@@ -15,7 +16,7 @@ class CandidateRepository {
     return await Candidate.find();
   }
 
-  async update(id: string, updateData: any) {
+  async update(id: string, updateData: Partial<CreateCandidateDTO>) {
     return await Candidate.findByIdAndUpdate(id, updateData, { new: true });
   }
 
@@ -24,20 +25,25 @@ class CandidateRepository {
   }
 
   async findByInterviewId(interviewId: string) {
-    return await Candidate.find({ interview: interviewId }); // Tüm aday bilgilerini seçiyoruz
+    return await Candidate.find({ interview: interviewId });
   }
 
-  async getPresignedUrlsForCandidates(candidates: any[]) {
+  async getPresignedUrlsForCandidates(candidates: InstanceType<typeof Candidate>[]) {
     return await Promise.all(
       candidates.map(async (candidate) => {
-        const presignedUrl = await getPresignedUrlRepository(candidate.videoUrl);
+        const presignedUrl = candidate.videoUrl
+          ? await getPresignedUrlRepository(candidate.videoUrl)
+          : null; // videoUrl yoksa null olarak döndür
+
         return {
-          ...candidate.toObject(), // Tüm aday bilgilerini döndürüyoruz
-          videoUrl: presignedUrl,  // Presigned URL'i video anahtarı yerine koyuyoruz
+          ...candidate.toObject(),
+          videoUrl: presignedUrl,
         };
       })
     );
-  }
+}
+
+
 
   async countCandidatesByInterviewId(interviewId: string) {
     return await Candidate.countDocuments({ interview: interviewId });
