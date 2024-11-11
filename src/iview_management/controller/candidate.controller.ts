@@ -52,7 +52,7 @@ export class CandidateController {
       res: Response
     ): Promise<void> => {
       try {
-        const { interviewId } = req.params;
+        const { id: interviewId } = req.params;
   
         // Aday bilgilerini ve presigned URL'leri al
         const candidatesWithPresignedUrls = await this.candidateService.getCandidateByInterviewId(interviewId); 
