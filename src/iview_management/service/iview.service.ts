@@ -1,32 +1,15 @@
 import InterviewRepository from "../repository/iview.repository";
 import { CreateInterviewDTO } from "../dto/iview.dto";
 
-const interviewRepository = new InterviewRepository();
-
 class InterviewService {
   interviewRepository: InterviewRepository;
 
   constructor() {
-    this.interviewRepository = new InterviewRepository(); // InterviewRepository'yi burada doğru şekilde tanımlıyoruz
+    this.interviewRepository = new InterviewRepository(); 
   }
 
   async createInterview(interviewData: CreateInterviewDTO) {
-    const currentDate = new Date();
-    const interviewDate = new Date(interviewData.date);
-
-    // Mülakat tarihini kontrol ediyoruz
-    let status = "live";  // Varsayılan olarak "live"
-    if (interviewDate < currentDate) {
-      status = "not live";  // Geçmiş bir tarihse "not live"
-    }
-
-    // Status alanını ekliyoruz
-    const newInterviewData = {
-      ...interviewData,
-      status
-    };
-
-    return await this.interviewRepository.create(newInterviewData);
+    return await this.interviewRepository.create(interviewData);
   }
 
   async getAllInterviews() {
@@ -43,10 +26,10 @@ class InterviewService {
   }
 
   async getInterviewById(id: string) {
-    return await this.interviewRepository.getInterviewById(id); // interviewRepository'yi this üzerinden çağırıyoruz
+    return await this.interviewRepository.getInterviewById(id);
   }
 
-  async updateInterview(id: string, updateData: any) {
+  async updateInterview(id: string, updateData: Partial<CreateInterviewDTO>) { // updateData için Partial<CreateInterviewDTO> kullanıyoruz
     return await this.interviewRepository.update(id, updateData);
   }
 

@@ -4,7 +4,7 @@ import { CreateInterviewDTO } from "../dto/iview.dto";
 import { v4 as uuidv4 } from 'uuid';
 import { IQuestion, Question } from "../../question_management/entity/question";
 import { Interview } from "../models/iview.schema";
-
+import { ObjectId } from "mongoose";
 
 export class InterviewController {
   private interviewService: InterviewService;
@@ -19,39 +19,24 @@ export class InterviewController {
     res: Response
   ): Promise<void> => {
     try {
-      const { title, packageName, expireDate } = req.body; // frontend'den gelen veriler
+      const { title, packageName, status } = req.body; // 'status' frontend'den alınacak
   
       // packageName (tags) ile soruları buluyoruz
       const questions = await Question.find({
         tags: { $regex: new RegExp(packageName, "i") }  // Küçük/büyük harf duyarsız arama
       });
   
-      // Soruların ID'lerini map'liyoruz
-      const questionIds = questions.map((q) => q._id);
+      // Soruların ID'lerini map'liyoruz ve türünü belirtiyoruz
+      const questionIds: string[] = questions.map((q) => (q._id as ObjectId).toString());
   
       // UUID ile benzersiz bir link oluşturuyoruz
       const interviewLink = uuidv4(); // Benzersiz link
   
-      // expireDate formatını kontrol ediyoruz
-      if (!Date.parse(expireDate)) {
-        throw new Error("Invalid date format");
-      }
-  
-      // Mülakat tarihinin geçmiş olup olmadığını kontrol ediyoruz
-      const currentDate = new Date();
-      const interviewDate = new Date(expireDate);
-  
-      let status = "live";  // Varsayılan olarak mülakat live
-      if (interviewDate < currentDate) {
-        status = "not live";  // Mülakat tarihi geçmişse, status 'not live' olarak ayarlanır
-      }
-  
       // Interview DTO'yu oluşturuyoruz
       const interviewDTO = new CreateInterviewDTO({
         title,
-        date: interviewDate,
         questions: questionIds,
-        status,  // Mülakat durumu
+        status,  // Frontend'den gelen mülakat durumu
       });
   
       // Yeni mülakat nesnesini oluşturuyoruz ve link'i ekliyoruz
@@ -72,6 +57,8 @@ export class InterviewController {
       });
     }
   };
+  
+
   
 
   // Get all interviews with questions

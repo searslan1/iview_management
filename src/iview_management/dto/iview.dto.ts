@@ -2,12 +2,14 @@ export class CreateInterviewDTO {
   title: string;
   date: Date;
   questions: string[];
-  status: string;  // Status alanını ekliyoruz
+  status: string;
+  link?: string;
 
-  constructor({ title, date, questions, status }: any) {
-    this.title = title;
-    this.date = date;
-    this.questions = questions;
-    this.status = status;  // Status parametresi burada ekleniyor
+  constructor({ title, date, questions, status, link }: Partial<CreateInterviewDTO>) {
+    this.title = title || '';
+    this.date = date || new Date();
+    this.questions = questions || [];
+    this.status = status || 'live';
+    this.link = link;
   }
 }

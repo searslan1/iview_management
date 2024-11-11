@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { InterviewController } from "../controller/iview.controller";
-import { CandidateController } from "../controller/candidate.controller";
+
 
 const interviewController = new InterviewController();
 

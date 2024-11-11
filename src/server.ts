@@ -1,5 +1,6 @@
 import express from "express";
-import dotenv from "dotenv"; // dotenv'i içe aktar
+import dotenv from "dotenv";
+import cors from "cors";
 import { connectDB } from "./db/db";
 import commonRouter from "./common/router/auth.routes";
 import questionRouter from "./question_management/routes/question.routes";
@@ -10,11 +11,12 @@ import videoRoutes from "./iview_management/routes/video.routes";
 
 dotenv.config(); // .env dosyasını yükle
 
-const CORS_ORIGIN1 = process.env.CORS_ORIGIN;
-const CORS_USER = process.env.CORS_USER;
+// CORS ayarları için tanımlı environment değişkenlerini kontrol ediyoruz
+const corsOrigins = [process.env.CORS_ORIGIN, process.env.CORS_USER].filter(
+  (origin): origin is string => !!origin
+);
 
 const app = express();
-const cors = require("cors");
 
 connectDB();
 
@@ -22,21 +24,21 @@ connectDB();
 app.use(express.json());
 app.use(
   cors({
-    origin: [CORS_ORIGIN1, CORS_USER],
+    origin: corsOrigins.length > 0 ? corsOrigins : false, // Eğer tanımlı değilse CORS'u devre dışı bırak
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
-// Kullanıcı kaydı için
-app.use("/api/register", registerRoutes); //admin kaydı için
+// Router ayarları
+app.use("/api/register", registerRoutes); // admin kaydı için
 app.use("/api/auth", commonRouter); // Auth işlemleri için
 app.use("/api/questions", questionRouter); // Soru yönetimi için
 app.use("/api/iview", iviewRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use('/api/videos', videoRoutes);
 
-const PORT = process.env.PORT; // Eğer PORT yoksa varsayılan 5000
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Sunucu ${PORT} portunda çalışıyor`);
 });
