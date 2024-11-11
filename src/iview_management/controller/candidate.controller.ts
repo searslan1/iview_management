@@ -136,32 +136,39 @@ export class CandidateController {
 
   //frontendden gelen yeni statusu günceller
   public updateCandidateStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { id } = req.params;  // URL'den adayın id'sini alıyoruz
-    const { status } = req.body;  // frontend'den status alıyoruz
-
-    if (!status) {
-      res.status(400).json({ message: "Status is required" });
-      return;
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;  // URL'den adayın id'sini alıyoruz
+      const { status, note } = req.body;  // frontend'den status ve note alıyoruz
+  
+      if (!status) {
+        res.status(400).json({ message: "Status is required" });
+        return;
+      }
+  
+      // `status` ve `note` alanlarını güncellemek için
+      const updateData: { status: string; note?: string } = { status };
+      if (note) {
+        updateData.note = note;
+      }
+  
+      const updatedCandidate = await this.candidateService.updateCandidate(id, updateData); // `status` ve `note` gönderiliyor
+  
+      if (!updatedCandidate) {
+        res.status(404).json({ message: "Candidate not found" });
+        return;
+      }
+  
+      res.status(200).json(updatedCandidate);
+    } catch (error) {
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-
-    const updatedCandidate = await this.candidateService.updateCandidate(id, { status }); // Burada status direkt string olarak gönderilmeli
-
-    if (!updatedCandidate) {
-      res.status(404).json({ message: "Candidate not found" });
-      return;
-    }
-
-    res.status(200).json(updatedCandidate);
-  } catch (error) {
-    res.status(500).json({
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-};
+  };
+  
 
   //toplam aday sayısı ve pending aday sayısını alır
   public getCandidateStatsByInterviewId = async (
