@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -9,10 +8,8 @@ import PackageListPage from './pages/PackageListPage';
 import InterviewList from './pages/InterviewListPage';
 import SeeVideosPage from './pages/SeeVideosPage';
 
-
 function App() {
   return (
-    
     <Router>
       <Routes>
         {/* Main admin login route */}
@@ -20,22 +17,17 @@ function App() {
 
         {/* Admin layout with nested routes */}
         <Route path="/admin-page" element={<AdminLayoutPage />}>
-          
           {/* Manage Questions/Packages routes */}
           <Route path="manage-questions-package" element={<ManageQuestionList />}>
             <Route path="question-list" element={<QuestionListPage />} />
             <Route path="package-list" element={<PackageListPage />} />
           </Route>
 
-          {/* Interview list route with nested video-view route */}
-          <Route path="interview-list" element={<InterviewList />}>
+          {/* Interview list route */}
+          <Route path="interview-list" element={<InterviewList />} />
+
+          {/* Nested see-videos route */}
           <Route path="see-videos/:interviewId" element={<SeeVideosPage />} />
-          
-          </Route>
-
-
-        
-
         </Route>
       </Routes>
     </Router>

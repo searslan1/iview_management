@@ -17,12 +17,12 @@ const usePackageStore = create((set) => ({
   // Seçilen pakete (tag'e) göre soruları çekme
   loadQuestionsByPackage: async (packageName) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/questions/tag/${packageName}`
-      ); // Tag'e göre soruları çek
-      set({ questions: response.data });
+      const response = await axios.get(`http://localhost:5000/api/questions/tag/${packageName}`);
+      console.log("API Response for questions:", response.data); // Log API response for debugging
+      set({ questions: response.data }); // Update questions state with data from API
     } catch (error) {
       console.error("Error loading questions:", error);
+      set({ questions: [] }); // Set questions to an empty array if there’s an error
     }
   },
   // Sorudan belirli bir tag'i silme

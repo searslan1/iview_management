@@ -1,21 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
-import useInterviewStore from '../../store/useInterviewListStore'; // Now using Interview Store
 
-const QuestionModal = ({ isOpen, onClose, packageName }) => {
-  const { loadInterviews, interviews } = useInterviewStore(); // Using interviews and load function
+const QuestionModal = ({ isOpen, onClose, questions }) => {
+  const [localQuestions, setLocalQuestions] = useState([]);
 
-  // Load interviews when modal is opened
   useEffect(() => {
-    if (isOpen && packageName) {
-      loadInterviews(); // Load the interviews once modal opens
-    }
-  }, [isOpen, packageName, loadInterviews]);
+    // questions değiştiğinde localQuestions güncelleniyor
+    setLocalQuestions(questions);
+  }, [questions]);
 
   if (!isOpen) return null;
-
-  // Find questions related to the packageName (this should be filtered in backend response)
-  const questions = interviews.filter(interview => interview.packageName === packageName)[0]?.questions || [];
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -29,10 +23,10 @@ const QuestionModal = ({ isOpen, onClose, packageName }) => {
           </div>
         </div>
         <ul className="max-h-64 overflow-y-auto">
-          {questions.length ? (
-            questions.map((question) => (
+          {localQuestions && localQuestions.length > 0 ? (
+            localQuestions.map((question, index) => (
               <li
-                key={question._id}
+                key={question._id || index} // Eğer _id yoksa index kullan
                 className="flex justify-between items-center p-4 mb-2 bg-gray-100 rounded-lg shadow-sm"
               >
                 <span className="font-semibold">{question.questionText}</span>
@@ -40,7 +34,7 @@ const QuestionModal = ({ isOpen, onClose, packageName }) => {
               </li>
             ))
           ) : (
-            <p>No questions available for this package.</p>
+            <p>No questions available for this interview.</p>
           )}
         </ul>
       </div>

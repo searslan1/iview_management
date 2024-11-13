@@ -3,27 +3,26 @@ import Button from '../Button';
 import InputField from '../InputField';
 import Dropdown from '../Dropdown';
 import DatePicker from '../DatePicker';
-
-const CreateInterviewModal = ({ 
-  isOpen, 
-  onClose, 
-  onAddInterview, 
-  title, 
-  packageName, 
-  expireDate, 
-  canSkip, 
-  showAtOnce, 
-  setTitle, 
-  setPackageName, 
-  setExpireDate, 
-  setCanSkip, 
-  setShowAtOnce, 
-  packages 
+import usePackageListStore from '../../store/usePackageListStore'; // Package list store'u içe aktarıyoruz
+const CreateInterviewModal = ({
+  isOpen,
+  onClose,
+  onAddInterview,
+  title,
+  packageName,
+  expireDate,
+  setTitle,
+  setPackageName,
+  setExpireDate,
+  packages
 }) => {
+  const { loadQuestionsByPackage } = usePackageListStore(); // loadQuestionsByPackage fonksiyonunu alıyoruz
   if (!isOpen) return null;
-
+  const handleAddInterview = () => {
+    onAddInterview(); // Mülakat oluşturma fonksiyonu
+    loadQuestionsByPackage(packageName); // Seçilen packageName ile soruları yükleme
+  };
   const packageOptions = packages.map((pkg) => pkg); // Use the packages prop
-
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
       {/* Overlay */}
@@ -50,7 +49,10 @@ const CreateInterviewModal = ({
             label="Package"
             options={packageOptions}
             selected={packageName}
-            onChange={setPackageName}
+            onChange={(e) => {
+              setPackageName(e); // packageName'i set ediyoruz
+              loadQuestionsByPackage(e); // Seçilen packageName'e göre soruları yüklüyoruz
+            }}
           />
           {/* Expire Date */}
           <DatePicker
@@ -59,29 +61,12 @@ const CreateInterviewModal = ({
             onChange={setExpireDate}
           />
           {/* Switches */}
-          <div className="flex justify-between mt-4">
-            <div className="flex items-center">
-              <label className="mr-2">Can Skip</label>
-              <input
-                type="checkbox"
-                checked={canSkip}
-                onChange={() => setCanSkip(!canSkip)}
-              />
-            </div>
-            <div className="flex items-center">
-              <label className="mr-2">Show At Once</label>
-              <input
-                type="checkbox"
-                checked={showAtOnce}
-                onChange={() => setShowAtOnce(!showAtOnce)}
-              />
-            </div>
-          </div>
+
           {/* Add Button */}
           <div className="flex justify-end">
             <Button
               label="Add"
-              onClick={onAddInterview}
+              onClick={handleAddInterview} // handleAddInterview ile onAddInterview ve question yükleme işlemi yapıyoruz
               className="text-white bg-[#47A7A2] font-semibold hover:bg-white hover:text-[#47A7A2] border p-2 rounded mt-6"
             />
           </div>
@@ -90,5 +75,4 @@ const CreateInterviewModal = ({
     </div>
   );
 };
-
 export default CreateInterviewModal;

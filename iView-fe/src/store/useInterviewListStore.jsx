@@ -3,8 +3,11 @@ import axios from 'axios';
 
 const useInterviewStore = create((set) => ({
     interview: null,
+    interviews: [],
     isLoading: false,
     error: null,
+    candidateStats: null, // Add candidateStats to the store state
+
     // Fetch all interviews from the server
     loadInterviews: async () => {
         try {
@@ -27,20 +30,21 @@ const useInterviewStore = create((set) => ({
         }
     },
 
+    // Fetch a single interview by ID
     loadInterview_Id: async (interviewId) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await axios.get(`http://localhost:5000/api/iview/link/${interviewId}`);
-          set({ interview: response.data, isLoading: false });
+            const response = await axios.get(`http://localhost:5000/api/iview/link/${interviewId}`);
+            set({ interview: response.data, isLoading: false });
+            return response.data;
         } catch (error) {
-          console.error('Error loading interview:', error);
-          set({ isLoading: false, error: error.response?.data?.error || 'Unknown error' });
+            console.error('Error loading interview:', error);
+            set({ isLoading: false, error: error.response?.data?.error || 'Unknown error' });
+            return null;
         }
-      },
+    },
 
-
-
-
+    // Delete an interview by ID
     deleteInterview: async (interviewId) => {
         try {
             await axios.delete(`http://localhost:5000/api/iview/delete/${interviewId}`);
@@ -49,6 +53,20 @@ const useInterviewStore = create((set) => ({
             }));
         } catch (error) {
             console.error('Error deleting interview:', error);
+        }
+    },
+
+    // New function to load candidate stats by interview ID
+    loadCandidateStats: async (interviewId) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await axios.get(`http://localhost:5000/api/candidate/interview/${interviewId}/stats`);
+            set({ candidateStats: response.data, isLoading: false });
+            return response.data;
+        } catch (error) {
+            console.error('Error loading candidate stats:', error);
+            set({ isLoading: false, error: error.response?.data?.error || 'Unknown error' });
+            return null;
         }
     },
 

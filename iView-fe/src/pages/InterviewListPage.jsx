@@ -9,35 +9,47 @@ import useInterviewStore from '../store/useInterviewListStore';
 const InterviewList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  
   // Package store
   const { packages, loadPackageNames } = usePackageStore();
-
+  
   // Interview store
-  const { interviews, loadInterviews, addInterview } = useInterviewStore();
-
+  const { interviews, loadInterviews, addInterview, loadCandidateStats } = useInterviewStore();
+  
   // Manage interview form state
   const [title, setTitle] = useState('');
   const [packageName, setPackageName] = useState('');
   const [expireDate, setExpireDate] = useState('');
-  const [canSkip, setCanSkip] = useState(false);
-  const [showAtOnce, setShowAtOnce] = useState(false);
+  
+  // Local state for candidate stats
+  const [candidateStats, setCandidateStats] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       await loadPackageNames();
       await loadInterviews();
-      setLoading(false); // Set loading to false after fetching
+      
+      // Load candidate stats for each interview
+      const statsPromises = interviews.map(async (interview) => {
+        const stats = await loadCandidateStats(interview._id);
+        return { [interview._id]: stats };
+      });
+      
+      // Wait for all stats to load and store them in state
+      const statsResults = await Promise.all(statsPromises);
+      const stats = Object.assign({}, ...statsResults);
+      setCandidateStats(stats);
+      setLoading(false);
     };
     fetchData();
-  }, [loadPackageNames, loadInterviews]);
+  }, [loadPackageNames, loadInterviews, loadCandidateStats, interviews]);
 
   const handleAddInterview = async () => {
     if (!title || !packageName || !expireDate) {
       alert('Please fill in all required fields');
       return;
     }
-    const newInterview = { title, packageName, expireDate, canSkip, showAtOnce };
+    const newInterview = { title, packageName, expireDate };
     await addInterview(newInterview);
     resetForm();
     setIsModalOpen(false);
@@ -47,12 +59,10 @@ const InterviewList = () => {
     setTitle('');
     setPackageName('');
     setExpireDate('');
-    setCanSkip(false);
-    setShowAtOnce(false);
   };
 
   if (loading) {
-    return <div>Loading interviews...</div>; // Loading state
+    return <div>Loading interviews...</div>;
   }
 
   return (
@@ -65,38 +75,34 @@ const InterviewList = () => {
           label={<FaUsersViewfinder size={40} />}
         />
       </div>
-
       <div className="flex flex-wrap">
         {interviews.map((interview) => (
           <InterviewCard
-            key={interview._id} // Use unique ID instead of index
+            key={interview._id}
             id={interview._id}
             title={interview.title}
-            totalCandidates={interview.totalCandidates}
-            onHoldCandidates={interview.onHoldCandidates}
+            totalCandidates={candidateStats[interview._id]?.totalCandidates || 0}
+            onHoldCandidates={candidateStats[interview._id]?.pendingCandidates || 0}
             expireDate={interview.expireDate}
+            packageName={interview.packageName}
+            questions={interview.questions}
           />
         ))}
       </div>
-
       {isModalOpen && (
         <CreateInterviewModal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            resetForm(); // Reset form on close
+            resetForm();
           }}
           onAddInterview={handleAddInterview}
           title={title}
           packageName={packageName}
           expireDate={expireDate}
-          canSkip={canSkip}
-          showAtOnce={showAtOnce}
           setTitle={setTitle}
           setPackageName={setPackageName}
-          setExpireDate={setExpireDate}
-          setCanSkip={setCanSkip}
-          setShowAtOnce={setShowAtOnce}
+          setExpireDate={setExpireDate}        
           packages={packages}
         />
       )}
