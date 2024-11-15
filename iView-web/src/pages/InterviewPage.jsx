@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useInterviewFetchStore from '../stores/useInterviewFetchStore';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MdOutlineEmergencyRecording } from "react-icons/md";
 import { GiStopSign } from "react-icons/gi";
 import { LuTv2 } from "react-icons/lu";
@@ -13,9 +13,9 @@ import useVideoUploadStore from '../stores/useVideoUploadStore';
 const InterviewPage = () => {
   const { surname } = useCandidateStore();
   const { uuid, formId } = useParams();
+  const navigate = useNavigate(); // React Router's useNavigate hook
   const { loadInterview_Id, getQuestions } = useInterviewFetchStore();
-  const { uploadVideo, isUploading, successMessage, error } = useVideoUploadStore();
-  const [isBlobReady, setIsBlobReady] = useState(false);
+  const { uploadVideo, isUploading } = useVideoUploadStore();
   const chunksRef = useRef([]);
   const questions = getQuestions();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -56,7 +56,7 @@ const InterviewPage = () => {
       });
     }, 1000);
   };
-  
+
   const startTotalTimer = () => {
     if (totalTimerRef.current) clearInterval(totalTimerRef.current);
     totalTimerRef.current = setInterval(() => {
@@ -99,7 +99,6 @@ const InterviewPage = () => {
         if (chunksRef.current.length > 0) {
           const blob = new Blob(chunksRef.current, { type: 'video/webm' });
           setVideoBlob(blob);
-          setIsBlobReady(true);
         } else {
           toast.error("Video kaydı alınamadı.");
         }
@@ -110,7 +109,6 @@ const InterviewPage = () => {
       startTotalTimer();
       startQuestionTimer();
       
-      // Show toast and enable handleSkip
       toast.success("Kayıt başladı.");
     }
   };
@@ -121,30 +119,39 @@ const InterviewPage = () => {
       if (confirmStop) {
         mediaRecorder.stop();
         setIsRecording(false);
-
+  
         clearInterval(questionTimerRef.current);
         clearInterval(totalTimerRef.current);
-
+  
         if (stream) {
           stream.getTracks().forEach((track) => track.stop());
           setStream(null);
         }
         setCameraOn(false);
+  
+        mediaRecorder.onstop = async () => {
+          if (chunksRef.current.length > 0) {
+            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+            setVideoBlob(blob);
 
-        // Trigger upload if blob is ready
-        if (isBlobReady && videoBlob) {
-          try {
-            await uploadVideo(videoBlob, formId);
-            toast.success("Video başarıyla yüklendi.");
-          } catch (uploadError) {
-            console.error("Upload error:", uploadError);
-            toast.error("Video yüklenirken hata oluştu.");
+            try {
+              await uploadVideo(blob, formId);
+              toast.success("Video başarıyla yüklendi. Sayfadan çıkabilirsiniz!");
+              
+              // Yönlendirme işlemi: Video yüklemesi tamamlandığında SuccessPage'e yönlendir
+              navigate("/success"); // Success sayfasına yönlendir
+            } catch (uploadError) {
+              console.error("Upload error:", uploadError);
+              toast.error("Video yüklenirken hata oluştu.");
+            }
+          } else {
+            toast.error("Video kaydı alınamadı.");
           }
-        }
+        };
       }
     }
   };
-
+  
   const handleSkip = () => {
     if (isRecording && currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -157,8 +164,7 @@ const InterviewPage = () => {
 
   return (
     <div className="flex flex-col items-center bg-[#ceebe9] justify-center h-screen">
-      <ToastContainer />
-
+      <ToastContainer /> {/* ToastContainer burada yer almalı */}
       {/* Progress Bar */}
       <div className="w-full max-w-5xl bg-gray-200 rounded-full h-4 mb-4">
         <div

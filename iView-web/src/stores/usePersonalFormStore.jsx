@@ -6,7 +6,7 @@ const useCandidateStore = create((set) => ({
     surname: '',
     submitCandidateForm: async (uuid, formData) => {
         try {
-            const response = await axios.post(`http://localhost:5000/api/candidate/submit`, { uuid, ...formData });
+            const response = await axios.post('http://localhost:5000/api/candidate/submit', { uuid, ...formData });
             const { candidateId, surname } = response.data;
             set({ candidateId, surname });
             return { candidateId };
