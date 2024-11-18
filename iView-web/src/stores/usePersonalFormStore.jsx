@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-const ApiUrl2 = import.meta.env.VITE_API_URL2;
+const ApiUrl = import.meta.env.VITE_API_URL;
 const useCandidateStore = create((set) => ({
     candidateId: null,
     surname: '',
     submitCandidateForm: async (uuid, formData) => {
         try {
-            const response = await axios.post(`${ApiUrl2}/candidate/submit`, { uuid, ...formData });
+            const response = await axios.post(`${ApiUrl}/api/candidate/submit`, { uuid, ...formData });
             const { candidateId, surname } = response.data;
             set({ candidateId, surname });
             return { candidateId };

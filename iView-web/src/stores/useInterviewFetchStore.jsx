@@ -13,7 +13,7 @@ const useInterviewFetchStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     console.log("Backend'e gönderilen id:", uuid);
     try {
-      const response = await axios.get(`${ApiUrl}/app/${uuid}`); // id gönderiliyor
+      const response = await axios.get(`${ApiUrl}/api/iview/app/${uuid}`); // id gönderiliyor
       set({ interview: response.data, isLoading: false });
     } catch (error) {
       set({ isLoading: false, error: error.response?.data?.error || 'Unknown error' });

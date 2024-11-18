@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-const ApiUrl2 = import.meta.env.VITE_API_URL2;
+const ApiUrl = import.meta.env.VITE_API_URL;
 const useVideoUploadStore = create((set) => ({
   isUploading: false,
   error: null,
@@ -16,7 +16,7 @@ const useVideoUploadStore = create((set) => ({
       formData.append('formId', formId);
 
       const response = await axios.post(
-        `${ApiUrl2}/videos/upload-video`, // .env'den gelen URL
+        `${ApiUrl}/api/videos/upload-video`, // .env'den gelen URL
         formData
       );
       
