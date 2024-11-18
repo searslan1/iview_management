@@ -3,8 +3,8 @@ import useSeeVideosStore from '../store/useSeeVideosStore';
 import { useParams } from 'react-router-dom';
 import { FaTrash } from "react-icons/fa";
 import { GrDocumentVideo } from "react-icons/gr";
-import VideoPlayer from '../components/VideoPlayerModal'; // VideoPlayer component
-import CandidateModal from '../components/modals/CandidateReviewModal'; // New Modal component
+import VideoPlayer from '../components/VideoPlayerModal'; 
+import CandidateModal from '../components/modals/CandidateReviewModal'; 
 
 const SeeVideosPage = () => {
   const { interviewId } = useParams();

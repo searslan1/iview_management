@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { create } from 'zustand';
 
+// Çevresel değişkeni kullanarak API URL'sini ayarlıyoruz
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const useSeeVideosStore = create((set) => ({
   candidateData: [],
   candidateStatus: null,
@@ -13,7 +16,7 @@ const useSeeVideosStore = create((set) => ({
   fetchCandidates: async (interviewId) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`http://localhost:5000/api/candidate/iview/${interviewId}`);
+      const response = await axios.get(`${API_URL}/api/candidate/iview/${interviewId}`); // Dinamik API URL kullanımı
       set({ candidateData: response.data, loading: false });
     } catch (error) {
       console.error("Error fetching candidate data:", error);
@@ -21,10 +24,11 @@ const useSeeVideosStore = create((set) => ({
     }
   },
 
+  // Görüşme Sorularını Fetch Et
   fetchInterviewQuestions: async (interviewId) => {
     set({ loading: true });
     try {
-      const response = await axios.get(`http://localhost:5000/api/iview/${interviewId}`);
+      const response = await axios.get(`${API_URL}/api/iview/${interviewId}`);
       
       // Soruları sadece questionText ve duration ile filtreliyoruz
       const questions = response.data.questions.map((question) => ({
@@ -32,17 +36,17 @@ const useSeeVideosStore = create((set) => ({
         duration: question.duration,
       }));
   
-      set({ interviewQuestions: questions, loading: false }); // Soruları al
+      set({ interviewQuestions: questions, loading: false });
     } catch (error) {
       console.error("Error fetching interview questions:", error);
       set({ interviewQuestions: [], loading: false });
     }
   },
-  
+
   // Adayı Sil
   deleteCandidate: async (candidateId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/candidate/delete/${candidateId}`);
+      await axios.delete(`${API_URL}/api/candidate/delete/${candidateId}`);
       // Başarılı bir silme işleminden sonra aday listesini güncelle
       set((state) => ({
         candidateData: state.candidateData.filter(candidate => candidate._id !== candidateId),
@@ -56,7 +60,7 @@ const useSeeVideosStore = create((set) => ({
   getCandidateStatus: async (id) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get(`http://localhost:5000/api/candidate/candidates/${id}/status`);
+      const response = await axios.get(`${API_URL}/api/candidate/candidates/${id}/status`);
       set({ candidateStatus: response.data.status, selectedCandidateId: id, loading: false });
     } catch (error) {
       set({ error: error.response?.data?.message || "Error fetching candidate status", loading: false });
@@ -64,12 +68,12 @@ const useSeeVideosStore = create((set) => ({
   },
 
   // Aday Durumunu Güncelle
-  updateCandidateStatus: async (id, status, note) => {  // Add note parameter
+  updateCandidateStatus: async (id, status, note) => {  // Note parametresi eklendi
     set({ loading: true, error: null });
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/candidate/update/${id}/status`, 
-        { status, note }  
+        `${API_URL}/api/candidate/update/${id}/status`, 
+        { status, note }  // Backend'e gönderilecek veri
       );
       set((state) => ({
         candidateStatus: response.data.status,
@@ -84,7 +88,6 @@ const useSeeVideosStore = create((set) => ({
       return false;
     }
   },
-  
 }));
 
 export default useSeeVideosStore;

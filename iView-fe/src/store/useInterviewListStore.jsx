@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
+// API URL'sini çevre değişkeninden alıyoruz
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 const useInterviewStore = create((set) => ({
     interview: null,
     interviews: [],
@@ -11,7 +14,7 @@ const useInterviewStore = create((set) => ({
     // Fetch all interviews from the server
     loadInterviews: async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/iview/interviews');
+            const response = await axios.get(`${apiUrl}/api/iview/interviews`);
             set({ interviews: response.data });
         } catch (error) {
             console.error('Error loading interviews:', error);
@@ -21,7 +24,7 @@ const useInterviewStore = create((set) => ({
     // Add a new interview to the state and database
     addInterview: async (interviewData) => {
         try {
-            const response = await axios.post('http://localhost:5000/api/iview/create', interviewData);
+            const response = await axios.post(`${apiUrl}/api/iview/create`, interviewData);
             set((state) => ({
                 interviews: [...state.interviews, response.data],
             }));
@@ -34,7 +37,7 @@ const useInterviewStore = create((set) => ({
     loadInterview_Id: async (interviewId) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await axios.get(`http://localhost:5000/api/iview/link/${interviewId}`);
+            const response = await axios.get(`${apiUrl}/api/iview/link/${interviewId}`);
             set({ interview: response.data, isLoading: false });
             return response.data;
         } catch (error) {
@@ -47,7 +50,7 @@ const useInterviewStore = create((set) => ({
     // Delete an interview by ID
     deleteInterview: async (interviewId) => {
         try {
-            await axios.delete(`http://localhost:5000/api/iview/delete/${interviewId}`);
+            await axios.delete(`${apiUrl}/api/iview/delete/${interviewId}`);
             set((state) => ({
                 interviews: state.interviews.filter((interview) => interview._id !== interviewId),
             }));
@@ -60,7 +63,7 @@ const useInterviewStore = create((set) => ({
     loadCandidateStats: async (interviewId) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await axios.get(`http://localhost:5000/api/candidate/interview/${interviewId}/stats`);
+            const response = await axios.get(`${apiUrl}/api/candidate/interview/${interviewId}/stats`);
             set({ candidateStats: response.data, isLoading: false });
             return response.data;
         } catch (error) {

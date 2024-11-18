@@ -3,13 +3,16 @@ import Button from "../Button";
 import TextArea from "../TextArea";
 import InputField from "../InputField";
 import { FaTrash } from "react-icons/fa";
-import axios from "axios"; // Backend'den tag'leri almak için
+import axios from "axios"; 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
   const [tagsArray, setTagsArray] = useState([]);
   const [newTag, setNewTag] = useState("");
   const [questionText, setQuestionText] = useState("");
   const [time, setTime] = useState(2);
-  const [availableTags, setAvailableTags] = useState([]); // Tag önerileri için state
+  const [availableTags, setAvailableTags] = useState([]); 
 
   useEffect(() => {
     if (question) {
@@ -22,9 +25,7 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/questions/tags"
-        );
+        const response = await axios.get(`${API_URL}/api/questions/tags`); // API_URL kullanımı
         setAvailableTags(response.data);
       } catch (error) {
         console.error("Error fetching tags:", error);
@@ -68,7 +69,7 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
         style={{
           width: "500px",
           height: "600px",
-          overflowY: "auto", // Kaydırma özelliği burada
+          overflowY: "auto", 
         }}
       >
         <div className="flex justify-between items-center border-b pb-2">
@@ -137,4 +138,5 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
     </div>
   );
 };
+
 export default EditQuestionModal;

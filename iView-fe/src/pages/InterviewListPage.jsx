@@ -34,7 +34,7 @@ const InterviewList = () => {
         return { [interview._id]: stats };
       });
       
-      // Wait for all stats to load and store them in state
+     
       const statsResults = await Promise.all(statsPromises);
       const stats = Object.assign({}, ...statsResults);
       setCandidateStats(stats);
@@ -44,7 +44,7 @@ const InterviewList = () => {
   }, [loadPackageNames, loadInterviews, loadCandidateStats, interviews]);
 
   const handleAddInterview = async () => {
-    // Using the saveInterview method directly from the store in CreateInterviewModal
+    
     await addInterview({}); 
     resetForm();
     setIsModalOpen(false);

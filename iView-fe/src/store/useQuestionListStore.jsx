@@ -1,18 +1,22 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+// Çevresel değişkeni kullanarak API URL'sini ayarlıyoruz
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const useQuestionListStore = create((set, get) => ({
   questions: [],
+
   // Soruları API'den yükleme fonksiyonu
   loadQuestions: async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/questions/`);
+      const response = await axios.get(`${API_URL}/api/questions/`); // Dinamik API URL kullanımı
       set({ questions: response.data });
     } catch (error) {
       console.error("Error loading questions:", error);
     }
   },
+
   // Soru ekleme fonksiyonu
   addQuestion: async (newQuestionInput) => {
     try {
@@ -22,7 +26,7 @@ const useQuestionListStore = create((set, get) => ({
         tags: newQuestionInput.packageNames, // tags olarak packageName kullanıyoruz
       };
       const response = await axios.post(
-        `http://localhost:5000/api/questions/create`,
+        `${API_URL}/api/questions/create`,
         newQuestion
       );
       // Yeni eklenen soruyu state'e ekleyelim
@@ -33,11 +37,12 @@ const useQuestionListStore = create((set, get) => ({
       console.error("Error adding question:", error);
     }
   },
+
   // Soru düzenleme fonksiyonu
   editQuestion: async (updatedQuestion) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/questions/update/${updatedQuestion._id}`,
+        `${API_URL}/api/questions/update/${updatedQuestion._id}`,
         updatedQuestion
       );
       set((state) => ({
@@ -49,10 +54,11 @@ const useQuestionListStore = create((set, get) => ({
       console.error("Error editing question:", error);
     }
   },
+
   // Soru silme fonksiyonu
   deleteQuestion: async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/questions/delete/${id}`);
+      await axios.delete(`${API_URL}/api/questions/delete/${id}`);
       set((state) => ({
         questions: state.questions.filter((q) => q._id !== id),
       }));
@@ -61,9 +67,11 @@ const useQuestionListStore = create((set, get) => ({
       console.error("Error deleting question:", error);
     }
   },
+
   // Tetikleyici işlevi
   triggerReload: () => {
     set({ reloadFlag: !get().reloadFlag });
   },
 }));
+
 export default useQuestionListStore;

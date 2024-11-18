@@ -3,35 +3,37 @@ import { FaTrash } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Button from "../components/Button";
 import usePackageStore from "../store/usePackageListStore";
-import PackageQuestionSelector from "../components/PackageQuestionSelector"; // Tag seçme bileşeni
+import PackageQuestionSelector from "../components/PackageQuestionSelector"; 
+
+
 const PackageListPage = () => {
   const {
     questions,
-    loadQuestionsByPackage, // Seçilen tag'e ait soruları almak için fonksiyon
-    deleteTagFromQuestion, // Sorudan tag'i silmek için fonksiyon
-    reorderQuestions, // Sıralama işlemi
+    loadQuestionsByPackage, 
+    deleteTagFromQuestion, 
+    reorderQuestions, 
   } = usePackageStore();
 
 
 
-  const [selectedTag, setSelectedTag] = useState(""); // Seçilen tag'i tutan state
-  // Tag seçildiğinde soruları yükleme
+  const [selectedTag, setSelectedTag] = useState(""); 
+  
   const handlePackageSelect = (packageName) => {
     setSelectedTag(packageName);
-    loadQuestionsByPackage(packageName); // Tag'e göre soruları yükle
+    loadQuestionsByPackage(packageName); 
   };
-  // Sorudan tag'i silme işlemi
+
   const handleDeleteTag = async (questionId) => {
-    await deleteTagFromQuestion(questionId, selectedTag); // Seçilen tag'i sorudan sil
-    await loadQuestionsByPackage(selectedTag); // Soruları yeniden yükle
+    await deleteTagFromQuestion(questionId, selectedTag); 
+    await loadQuestionsByPackage(selectedTag); 
   };
-  // Drag işlemi sona erdiğinde sıralama güncelleme
+ 
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
     const { source, destination } = result;
     if (source.index !== destination.index) {
-      await reorderQuestions(source.index, destination.index); // Yeni sıralamayı backend'e ilet
-      await loadQuestionsByPackage(selectedTag); // Soruları yeniden yükle
+      await reorderQuestions(source.index, destination.index); 
+      await loadQuestionsByPackage(selectedTag); 
     }
   };
   return (

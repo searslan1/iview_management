@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import usePackageStore from "../store/usePackageListStore"; // Paketleri backend'den almak için store
+import usePackageStore from "../store/usePackageListStore"; 
+
 const PackageQuestionSelector = ({ onPackageSelect }) => {
-  const { packages, loadPackageNames } = usePackageStore(); // Paket isimlerini store'dan alıyoruz
-  const [selectedPackage, setSelectedPackage] = useState(""); // Seçilen paketi tutmak için state
-  // Sayfa yüklendiğinde paket isimlerini yükle
+  const { packages, loadPackageNames } = usePackageStore(); 
+  const [selectedPackage, setSelectedPackage] = useState(""); 
+  
   useEffect(() => {
-    loadPackageNames(); // Paket isimlerini API'den çek
+    loadPackageNames(); 
   }, [loadPackageNames]);
-  // Dropdown'dan paket seçildiğinde
+  
   const handlePackageChange = (event) => {
-    const packageName = event.target.value; // Seçilen paket ismini alıyoruz
-    setSelectedPackage(packageName); // State'e atıyoruz
-    onPackageSelect(packageName); // Seçilen paketi üst bileşene ilet
+    const packageName = event.target.value; 
+    setSelectedPackage(packageName); 
+    onPackageSelect(packageName); 
   };
   return (
     <div>

@@ -4,6 +4,7 @@ import AddQuestionModal from "../components/modals/AddQuestionModal";
 import EditQuestionModal from "../components/modals/EditQuestionModal";
 import Button from "../components/Button";
 import useQuestionListStore from "../store/useQuestionListStore";
+
 const QuestionListPage = () => {
   const {
     questions,
@@ -11,29 +12,32 @@ const QuestionListPage = () => {
     editQuestion,
     deleteQuestion,
     loadQuestions,
-    reloadFlag, // Bu flag'i izleyelim
+    reloadFlag, 
   } = useQuestionListStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+
   useEffect(() => {
-    loadQuestions(); // Sayfa ilk açıldığında soruları yükle
+    loadQuestions(); 
   }, [loadQuestions]);
   useEffect(() => {
     console.log("Güncellenmiş sorular render ediliyor:", questions);
   }, [questions]);
   useEffect(() => {
-    loadQuestions(); // reloadFlag değiştiğinde soruları yeniden yükle
+    loadQuestions(); 
   }, [reloadFlag, loadQuestions]);
+  
   const handleEdit = (id) => {
-    const questionToEdit = questions.find((q) => q._id === id); // Sorunun ID'sine göre buluyoruz
-    setCurrentQuestion(questionToEdit); // Soruyu modal'a set ediyoruz
-    setIsEditModalOpen(true); // Modalı açıyoruz
+    const questionToEdit = questions.find((q) => q._id === id); 
+    setCurrentQuestion(questionToEdit); 
+    setIsEditModalOpen(true); 
   };
   const handleDelete = async (id) => {
-    // Soruyu tamamen sil
+   
     await deleteQuestion(id);
-    // Güncel soruları yeniden yükleyelim
+    
     await loadQuestions();
   };
   return (

@@ -5,7 +5,7 @@ const QuestionModal = ({ isOpen, onClose, questions }) => {
   const [localQuestions, setLocalQuestions] = useState([]);
 
   useEffect(() => {
-    // questions değiştiğinde localQuestions güncelleniyor
+    
     setLocalQuestions(questions);
   }, [questions]);
 
@@ -26,7 +26,7 @@ const QuestionModal = ({ isOpen, onClose, questions }) => {
           {localQuestions && localQuestions.length > 0 ? (
             localQuestions.map((question, index) => (
               <li
-                key={question._id || index} // Eğer _id yoksa index kullan
+                key={question._id || index} 
                 className="flex justify-between items-center p-4 mb-2 bg-gray-100 rounded-lg shadow-sm"
               >
                 <span className="font-semibold">{question.questionText}</span>

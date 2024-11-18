@@ -3,34 +3,41 @@ import Button from "../Button";
 import TextArea from "../TextArea";
 import InputField from "../InputField";
 import axios from "axios";
+
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const AddQuestionModal = ({ isOpen, onClose, onAddQuestion }) => {
   const [question, setQuestion] = useState("");
   const [time, setTime] = useState(2);
   const [packageNames, setPackageNames] = useState([""]);
-  const [availableTags, setAvailableTags] = useState([]); // Backend'den gelecek tag'ler
+  const [availableTags, setAvailableTags] = useState([]); 
+  
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/questions/tags"
-        );
-        setAvailableTags(response.data); // Tag'leri state'e kaydetme
+        const response = await axios.get(`${API_URL}/api/questions/tags`); 
+        setAvailableTags(response.data); 
         console.log("Available tags:", response.data);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
-    fetchTags(); // Sayfa yüklenirken tag'leri alıyoruz
+    fetchTags(); 
   }, []);
+
   if (!isOpen) return null;
+
   const addPackageName = () => {
     setPackageNames([...packageNames, ""]);
   };
+
   const handlePackageNameChange = (index, value) => {
     const updatedPackageNames = [...packageNames];
     updatedPackageNames[index] = value;
     setPackageNames(updatedPackageNames);
   };
+
   const handleAdd = async () => {
     if (!question.trim()) {
       alert("Please enter a valid question.");
@@ -41,22 +48,23 @@ const AddQuestionModal = ({ isOpen, onClose, onAddQuestion }) => {
       alert("Please enter at least one package name.");
       return;
     }
-  try {
-    await onAddQuestion({
-      packageNames: nonEmptyPackages,
-      question,
-      time,
-    });
-    // Formu sıfırla
-    setPackageNames([""]);
-    setQuestion("");
-    setTime(2);
-    // Modalı kapat
-    onClose();
-  } catch (error) {
-    console.error("Error adding question:", error);
-  }
-};
+    try {
+      await onAddQuestion({
+        packageNames: nonEmptyPackages,
+        question,
+        time,
+      });
+      // Formu sıfırla
+      setPackageNames([""]);
+      setQuestion("");
+      setTime(2);
+      // Modalı kapat
+      onClose();
+    } catch (error) {
+      console.error("Error adding question:", error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
       <div
@@ -84,7 +92,7 @@ const AddQuestionModal = ({ isOpen, onClose, onAddQuestion }) => {
                 value={name}
                 onChange={(value) => handlePackageNameChange(index, value)}
                 placeholder="Enter package name"
-                list="packageNamesList" // list ile datalist'i bağlama
+                list="packageNamesList" 
               />
               {/* Tag önerileri */}
               <datalist id="packageNamesList">
@@ -128,4 +136,5 @@ const AddQuestionModal = ({ isOpen, onClose, onAddQuestion }) => {
     </div>
   );
 };
+
 export default AddQuestionModal;

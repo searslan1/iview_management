@@ -1,16 +1,17 @@
-import { MdEmail, MdLock } from 'react-icons/md'; // Import icons
+import { MdEmail, MdLock } from 'react-icons/md'; 
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import useLoginStore from '../store/useAdminLoginPageStore';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom'; 
+
 const LoginPage = () => {
   const { username, password, setUsername, setPassword, login } = useLoginStore();
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault(); 
     const loginSuccessful = await login();
     if (loginSuccessful) {
-      navigate('/admin-page'); // Redirect after successful login
+      navigate('/admin-page'); 
     }
   };
   return (
