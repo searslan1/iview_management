@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { create } from 'zustand';
 
-// Çevresel değişkeni kullanarak API URL'sini ayarlıyoruz
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const useSeeVideosStore = create((set) => ({
@@ -24,7 +24,7 @@ const useSeeVideosStore = create((set) => ({
     }
   },
 
-  // Görüşme Sorularını Fetch Et
+
   fetchInterviewQuestions: async (interviewId) => {
     set({ loading: true });
     try {

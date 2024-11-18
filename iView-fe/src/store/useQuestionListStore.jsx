@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-// Çevresel değişkeni kullanarak API URL'sini ayarlıyoruz
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const useQuestionListStore = create((set, get) => ({

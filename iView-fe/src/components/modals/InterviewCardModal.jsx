@@ -4,6 +4,10 @@ import QuestionModal from '../modals/InterviewQuestionsModal';
 import useInterviewStore from '../../store/useInterviewListStore';
 import { Link } from 'react-router-dom';
 
+
+
+const API_URL = import.meta.env.VITE_API_URL 
+
 const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, status, questions }) => {
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [localInterview, setLocalInterview] = useState(null);
@@ -43,7 +47,8 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, status, q
       return;
     }
     if (localInterview && localInterview.uuid) {
-      const interviewLink = `http://localhost:5174/information-form/${localInterview.uuid}`;
+      // Linki çevresel değişken ile oluşturuyoruz
+      const interviewLink = `${API_URL}/information-form/${localInterview.uuid}`;
       try {
         await navigator.clipboard.writeText(interviewLink);
         alert("Link copied to clipboard!");
