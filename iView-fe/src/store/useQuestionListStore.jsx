@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.VITE_API_URL;
 
 const useQuestionListStore = create((set, get) => ({
   questions: [],

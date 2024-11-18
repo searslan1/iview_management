@@ -2,7 +2,7 @@ import axios from 'axios';
 import { create } from 'zustand';
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.VITE_API_URL;
 
 const useSeeVideosStore = create((set) => ({
   candidateData: [],

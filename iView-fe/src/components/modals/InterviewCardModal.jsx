@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 
 
-const API_URL = import.meta.env.VITE_API_URL 
+const API_URL = import.meta.env.VITE_WEB_URL;
 
 const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, status, questions }) => {
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);

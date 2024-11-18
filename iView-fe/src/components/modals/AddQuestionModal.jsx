@@ -5,7 +5,7 @@ import InputField from "../InputField";
 import axios from "axios";
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.VITE_API_URL;
 
 const AddQuestionModal = ({ isOpen, onClose, onAddQuestion }) => {
   const [question, setQuestion] = useState("");

@@ -5,7 +5,7 @@ import InputField from "../InputField";
 import { FaTrash } from "react-icons/fa";
 import axios from "axios"; 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.VITE_API_URL;
 
 const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
   const [tagsArray, setTagsArray] = useState([]);

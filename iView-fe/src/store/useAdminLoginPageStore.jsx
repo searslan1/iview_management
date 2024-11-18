@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.VITE_API_URL;
 
 const useAdminLoginPageStore = create((set) => ({
   username: '',

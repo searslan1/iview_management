@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 
 // Çevre değişkeninden API URL'sini alıyoruz
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.VITE_API_URL;
 
 const usePackageStore = create((set) => ({
   packages: [], // Paket isimlerini tutan state
