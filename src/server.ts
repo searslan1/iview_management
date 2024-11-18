@@ -18,7 +18,6 @@ if (!process.env.DB_URI) {
   process.exit(1); // Uygulama durdurulur
 }
 
-
 // CORS ayarları için tanımlı environment değişkenlerini kontrol ediyoruz
 const corsOrigins = [process.env.CORS_ORIGIN, process.env.CORS_USER].filter(
   (origin): origin is string => !!origin
@@ -26,12 +25,16 @@ const corsOrigins = [process.env.CORS_ORIGIN, process.env.CORS_USER].filter(
 
 const app = express();
 
+// Proxy ayarlarını yapıyoruz (X-Forwarded-For başlığını düzgün şekilde almak için)
+app.set('trust proxy', 1);  // Eğer proxy katmanı varsa, burada uygun değeri seçebilirsiniz
+
 connectDB();
 
 if (corsOrigins.length === 0) {
-  console.warn("No CORS origins specified, defaulting to '*'.");
+  console.warn("No CORS origins specified, defaulting to '*'");
 }
-// JSON body parser kullan
+
+// CORS, body parser ve diğer middleware'ler
 app.use(
   cors({
     origin: corsOrigins.length ? corsOrigins : "*", // "*": herkese izin verir.
@@ -39,6 +42,10 @@ app.use(
     credentials: true,
   })
 );
+
+// JSON body parser middleware'ini ekliyoruz
+app.use(express.json());  // JSON verilerini parse etmek için
+app.use(express.urlencoded({ extended: true })); // URL encoded verileri parse etmek için
 
 // Router ayarları
 app.use("/api/register", registerRoutes); // admin kaydı için
