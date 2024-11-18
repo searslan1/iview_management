@@ -4,17 +4,10 @@ import QuestionModal from '../modals/InterviewQuestionsModal';
 import useInterviewStore from '../../store/useInterviewListStore';
 import { Link } from 'react-router-dom';
 
-const isExpired = (expireDate) => {
-  const currentDate = new Date();
-  const interviewExpireDate = new Date(expireDate);
-  return interviewExpireDate < currentDate;
-};
-
-const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDate, questions }) => {
+const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, status, questions }) => {
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [localInterview, setLocalInterview] = useState(null);
   const { loadInterview_Id, deleteInterview } = useInterviewStore();
-  const publishedStatus = isExpired(expireDate) ? 'Not Live' : 'Live';
 
   useEffect(() => {
     if (id) {
@@ -45,8 +38,8 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDat
   };
 
   const handleCopyLink = async () => {
-    if (isExpired(expireDate)) {
-      alert("Interview has expired, link cannot be copied.");
+    if (status === 'Not Live') {
+      alert("Interview is not live; link cannot be copied.");
       return;
     }
     if (localInterview && localInterview.uuid) {
@@ -96,7 +89,7 @@ const InterviewCard = ({ id, title, totalCandidates, onHoldCandidates, expireDat
         <div className="flex justify-between items-center text-sm text-gray-600">
           <div className="flex items-center">
             <FaLink className="mr-1" />
-            <p>{publishedStatus}</p>
+            <p>{status}</p> {/* Status doğrudan burada kullanılıyor */}
           </div>
           <Link to={`/admin-page/see-videos/${id}`} className="text-[#47A7A2] hover:underline">
             See Videos &gt;

@@ -10,51 +10,53 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
   const [questionText, setQuestionText] = useState("");
   const [time, setTime] = useState(2);
   const [availableTags, setAvailableTags] = useState([]); // Tag önerileri için state
-  // Mevcut question verilerini ayarlamak için
+
   useEffect(() => {
     if (question) {
-      setTagsArray(question.tags || []); // Mevcut tags değerlerini ayarlıyoruz
-      setQuestionText(question.questionText); // Soru metni
-      setTime(question.duration); // Süre bilgisi
+      setTagsArray(question.tags || []);
+      setQuestionText(question.questionText);
+      setTime(question.duration);
     }
   }, [question]);
-  // Backend'den tag önerilerini almak için
+
   useEffect(() => {
     const fetchTags = async () => {
       try {
         const response = await axios.get(
           "http://localhost:5000/api/questions/tags"
-        ); // API'den tag'leri çekiyoruz
-        setAvailableTags(response.data); // Gelen tag'leri kaydediyoruz
+        );
+        setAvailableTags(response.data);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
     fetchTags();
   }, []);
-  // Yeni bir tag eklemek için fonksiyon
+
   const handleAddTag = () => {
     if (newTag && !tagsArray.includes(newTag)) {
       setTagsArray([...tagsArray, newTag]);
-      setNewTag(""); // Input'u sıfırlıyoruz
+      setNewTag("");
     }
   };
-  // Bir tag'i silmek için fonksiyon
+
   const handleDeleteTag = (tagToDelete) => {
     setTagsArray(tagsArray.filter((tag) => tag !== tagToDelete));
   };
-  // Soruyu güncelleme işlemi
+
   const handleEdit = () => {
     const updatedQuestion = {
       ...question,
-      tags: tagsArray, // Tüm tagsArray'i burada kullanıyoruz
+      tags: tagsArray,
       questionText,
       duration: parseInt(time, 10),
     };
-    onEditQuestion(updatedQuestion); // Güncelleme fonksiyonunu çağırıyoruz
-    onClose(); // Modalı kapatıyoruz
+    onEditQuestion(updatedQuestion);
+    onClose();
   };
+
   if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
       <div
@@ -63,7 +65,11 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
       ></div>
       <div
         className="relative bg-white rounded-lg shadow-lg p-6"
-        style={{ width: "500px", height: "auto" }}
+        style={{
+          width: "500px",
+          height: "600px",
+          overflowY: "auto", // Kaydırma özelliği burada
+        }}
       >
         <div className="flex justify-between items-center border-b pb-2">
           <h2 className="text-xl font-bold text-[#47A7A2]">Edit Question</h2>
@@ -75,14 +81,13 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
           </button>
         </div>
         <div className="mt-4 space-y-4">
-          {/* Tag Ekleme */}
           <InputField
             label="Add Tag"
             type="text"
             value={newTag}
-            onChange={(e) => setNewTag(e)} // Değişiklikleri handle ediyoruz
+            onChange={(e) => setNewTag(e)}
             placeholder="Enter new tag"
-            list="availableTagsList" // Tag önerilerini ekliyoruz
+            list="availableTagsList"
           />
           <datalist id="availableTagsList">
             {availableTags.map((tag, index) => (
@@ -94,7 +99,6 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
             onClick={handleAddTag}
             className="text-white bg-[#47A7A2] font-semibold hover:bg-white hover:text-[#47A7A2] border p-2 rounded mt-1"
           />
-          {/* Eklenen tagleri listeleme */}
           <div className="mt-2">
             {tagsArray.map((tag, index) => (
               <div key={index} className="flex items-center space-x-2">
@@ -107,20 +111,18 @@ const EditQuestionModal = ({ isOpen, onClose, onEditQuestion, question }) => {
               </div>
             ))}
           </div>
-          {/* Soru metni */}
           <TextArea
             label="Question"
             value={questionText}
             onChange={setQuestionText}
             placeholder="Enter the question text"
           />
-          {/* Süre */}
           <span className="ml-2 mb-3">Min:</span>
           <InputField
             label="Time"
             type="number"
             value={time}
-            onChange={(value) => setTime(value)} // Doğrudan 'value' gönderiliyor
+            onChange={(value) => setTime(value)}
             placeholder="Enter duration"
           />
         </div>

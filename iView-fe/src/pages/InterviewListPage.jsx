@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import { FaUsersViewfinder } from "react-icons/fa6";
 import usePackageStore from '../store/usePackageListStore';
 import useInterviewStore from '../store/useInterviewListStore';
+import useCreateInterviewStore from '../store/useCreateInterviewStore';
 
 const InterviewList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,11 +17,9 @@ const InterviewList = () => {
   // Interview store
   const { interviews, loadInterviews, addInterview, loadCandidateStats } = useInterviewStore();
   
-  // Manage interview form state
-  const [title, setTitle] = useState('');
-  const [packageName, setPackageName] = useState('');
-  const [expireDate, setExpireDate] = useState('');
-  
+  // Interview form state from useCreateInterviewStore
+  const { resetForm } = useCreateInterviewStore();
+
   // Local state for candidate stats
   const [candidateStats, setCandidateStats] = useState({});
 
@@ -45,20 +44,10 @@ const InterviewList = () => {
   }, [loadPackageNames, loadInterviews, loadCandidateStats, interviews]);
 
   const handleAddInterview = async () => {
-    if (!title || !packageName || !expireDate) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    const newInterview = { title, packageName, expireDate };
-    await addInterview(newInterview);
+    // Using the saveInterview method directly from the store in CreateInterviewModal
+    await addInterview({}); 
     resetForm();
     setIsModalOpen(false);
-  };
-
-  const resetForm = () => {
-    setTitle('');
-    setPackageName('');
-    setExpireDate('');
   };
 
   if (loading) {
@@ -83,7 +72,7 @@ const InterviewList = () => {
             title={interview.title}
             totalCandidates={candidateStats[interview._id]?.totalCandidates || 0}
             onHoldCandidates={candidateStats[interview._id]?.pendingCandidates || 0}
-            expireDate={interview.expireDate}
+            status={interview.status}
             packageName={interview.packageName}
             questions={interview.questions}
           />
@@ -94,15 +83,9 @@ const InterviewList = () => {
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            resetForm();
+            resetForm(); // Reset form on close
           }}
           onAddInterview={handleAddInterview}
-          title={title}
-          packageName={packageName}
-          expireDate={expireDate}
-          setTitle={setTitle}
-          setPackageName={setPackageName}
-          setExpireDate={setExpireDate}        
           packages={packages}
         />
       )}

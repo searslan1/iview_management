@@ -1,19 +1,18 @@
-import React from 'react';
 import { MdEmail, MdLock } from 'react-icons/md'; // Import icons
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import useLoginStore from '../store/useAdminLoginPageStore';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
 const LoginPage = () => {
   const { username, password, setUsername, setPassword, login } = useLoginStore();
   const navigate = useNavigate(); // Hook for navigation
-
-  const handleLogin = () => {
-    login();
-    navigate('/admin-page'); // Redirect after login
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent form submission
+    const loginSuccessful = await login();
+    if (loginSuccessful) {
+      navigate('/admin-page'); // Redirect after successful login
+    }
   };
-
   return (
     <div className="flex h-screen">
       {/* Left side (Form Area) */}
@@ -47,14 +46,12 @@ const LoginPage = () => {
           />
         </form>
       </div>
-
-      {/* Right side (Image Area) */}
-      <div className="w-2/3 bg-gray-50 flex justify-center items-center">
+       {/* Right side (Image Area) */}
+       <div className="w-2/3 bg-gray-50 flex justify-center items-center">
         {/* You can place your image here */}
         <img src="https://remotetech.work/assets/img/logo/logo.svg" alt="Logo" className="w-2/3" />
       </div>
     </div>
   );
 };
-
 export default LoginPage;

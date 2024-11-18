@@ -1,28 +1,45 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Button from '../Button';
 import InputField from '../InputField';
 import Dropdown from '../Dropdown';
 import DatePicker from '../DatePicker';
-import usePackageListStore from '../../store/usePackageListStore'; // Package list store'u içe aktarıyoruz
+import useCreateInterviewStore from '../../store/useCreateInterviewStore';
+
 const CreateInterviewModal = ({
   isOpen,
   onClose,
   onAddInterview,
-  title,
-  packageName,
-  expireDate,
-  setTitle,
-  setPackageName,
-  setExpireDate,
   packages
 }) => {
-  const { loadQuestionsByPackage } = usePackageListStore(); // loadQuestionsByPackage fonksiyonunu alıyoruz
+  const {
+    title,
+    packageName,
+    expireDate,
+    setTitle,
+    setPackageName,
+    setExpireDate,
+    saveInterview,
+    setStatus
+  } = useCreateInterviewStore();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (expireDate && new Date(expireDate) < new Date()) {
+        setStatus('Not Live');
+      }
+    }, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [expireDate, setStatus]);
+
   if (!isOpen) return null;
-  const handleAddInterview = () => {
-    onAddInterview(); // Mülakat oluşturma fonksiyonu
-    loadQuestionsByPackage(packageName); // Seçilen packageName ile soruları yükleme
+  const packageOptions = packages.map((pkg) => pkg);
+  const handleAddInterview = async () => {
+    const result = await saveInterview(onAddInterview);
+    if (result) {
+      onClose();
+    }
   };
-  const packageOptions = packages.map((pkg) => pkg); // Use the packages prop
+
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
       {/* Overlay */}
@@ -49,24 +66,21 @@ const CreateInterviewModal = ({
             label="Package"
             options={packageOptions}
             selected={packageName}
-            onChange={(e) => {
-              setPackageName(e); // packageName'i set ediyoruz
-              loadQuestionsByPackage(e); // Seçilen packageName'e göre soruları yüklüyoruz
-            }}
+            onChange={setPackageName}
           />
           {/* Expire Date */}
           <DatePicker
             label="Expire Date"
             value={expireDate}
             onChange={setExpireDate}
+            minDate={new Date().toISOString().split("T")[0]} // Geçmiş tarihler engelleniyor
           />
-          {/* Switches */}
-
+       
           {/* Add Button */}
           <div className="flex justify-end">
             <Button
               label="Add"
-              onClick={handleAddInterview} // handleAddInterview ile onAddInterview ve question yükleme işlemi yapıyoruz
+              onClick={handleAddInterview}
               className="text-white bg-[#47A7A2] font-semibold hover:bg-white hover:text-[#47A7A2] border p-2 rounded mt-6"
             />
           </div>
