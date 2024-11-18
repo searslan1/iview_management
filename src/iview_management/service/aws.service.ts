@@ -1,17 +1,16 @@
-import AWS from 'aws-sdk';
-import dotenv from 'dotenv';
+import { S3Client } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
 
 // Çevre değişkenlerini yükle
 dotenv.config();
 
-// AWS SDK'yı yapılandırma
-AWS.config.update({
-    accessKeyId: process.env.AWS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
-    region: process.env.AWS_REGION
+// AWS S3 istemcisi oluştur
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_KEY!,
+    secretAccessKey: process.env.AWS_SECRET_KEY!,
+  },
 });
 
-// S3 nesnesini oluştur ve dışa aktar
-const s3 = new AWS.S3();
-
-export default s3;
+export default s3Client;

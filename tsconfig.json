@@ -1,23 +1,24 @@
 {
   "compilerOptions": {
     "types": ["node", "express"],
-    "target": "ES6",  // ES6 veya daha güncel bir dil seviyesi hedefleniyor
-    "module": "commonjs",  // Node.js'de modül sistemi olarak commonjs kullanılıyor
+    "target": "ES6",
+    "module": "commonjs",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "strictNullChecks": true,
-    "outDir": "./dist",  // Derlenmiş dosyalar için çıkış dizini
-    "rootDir": "./src",  // Kaynak dosyalarının bulunduğu kök dizin
-    "strict": true,  // TypeScript için katı mod (daha güçlü tip kontrolü)
-    "esModuleInterop": true,  // CommonJS ve ES modülleri arasındaki uyumluluğu sağlar
-    "forceConsistentCasingInFileNames": true,  // Dosya adlarında tutarlı büyük/küçük harf kontrolü
-    "skipLibCheck": true,  // Dış kütüphanelerdeki tip kontrol hatalarını atlar
-    "moduleResolution": "node",  // Node.js modül çözümleme stratejisi kullanılır
-    "resolveJsonModule": true,  // JSON dosyalarını modül olarak kullanabilme özelliği
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
     "baseUrl": "./src",
-    "paths": {
-      "*": ["src/*"]  // Burada types dizinini ekliyoruz
-    }
- 
+   "paths": {
+  "*": ["./*"]
+}
+
   },
-  "include": ["src/**/*", "src/types/**/*.d.ts", "src/createUser.ts", "iview_management"],
-  "exclude": ["node_modules", "dist"]  // Derlemeye dahil edilmeyecek dizinler
+  "include": ["src/**/*", "src/types/**/*.d.ts", "iview_management/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

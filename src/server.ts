@@ -10,6 +10,14 @@ import candidateRoutes from "./iview_management/routes/candidate.routes";
 import videoRoutes from "./iview_management/routes/video.routes";
 
 dotenv.config(); // .env dosyasını yükle
+if (!process.env.PORT) {
+  console.warn("Warning: PORT environment variable is not defined.");
+}
+if (!process.env.DB_URI) {
+  console.error("Error: MONGO_URI is required to connect to the database.");
+  process.exit(1); // Uygulama durdurulur
+}
+
 
 // CORS ayarları için tanımlı environment değişkenlerini kontrol ediyoruz
 const corsOrigins = [process.env.CORS_ORIGIN, process.env.CORS_USER].filter(
@@ -20,11 +28,13 @@ const app = express();
 
 connectDB();
 
+if (corsOrigins.length === 0) {
+  console.warn("No CORS origins specified, defaulting to '*'.");
+}
 // JSON body parser kullan
-app.use(express.json());
 app.use(
   cors({
-    origin: corsOrigins.length > 0 ? corsOrigins : false, // Eğer tanımlı değilse CORS'u devre dışı bırak
+    origin: corsOrigins.length ? corsOrigins : "*", // "*": herkese izin verir.
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
