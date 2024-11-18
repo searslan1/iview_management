@@ -1,6 +1,7 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId; // _id alanının türünü burada açıkça belirtiyoruz
   username: string;
   password: string;
   role: 'admin' | 'master';
@@ -13,4 +14,3 @@ const UserSchema: Schema = new Schema({
 });
 
 export const User = model<IUser>('User', UserSchema);
-

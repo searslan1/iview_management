@@ -1,4 +1,5 @@
 import { User, IUser } from '../models/user.schema';
+import bcrypt from 'bcrypt';
 
 export class UserRepository {
   // Veritabanından kullanıcıyı kullanıcı adıyla bul
@@ -24,6 +25,9 @@ export class UserRepository {
   // Yeni kullanıcı ekle
   public async addUser(user: IUser): Promise<IUser> {
     try {
+      const saltRounds = 10;
+      user.password = await bcrypt.hash(user.password, saltRounds); // Şifreyi hashle
+
       const newUser = new User(user);
       return await newUser.save();
     } catch (error) {
